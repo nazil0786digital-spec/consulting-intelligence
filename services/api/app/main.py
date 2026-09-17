@@ -3,11 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.contracts import DocumentResponse, EvaluationReport, EvidenceItem, InvestigationAuditList, InvestigationAuditRecord, InvestigationPreviewRequest, InvestigationPreviewResult, KnowledgeSearchRequest, KnowledgeSearchResult, OrganizationCreateRequest, OrganizationInvestigationRequest, OrganizationResponse
+from app.contracts import DocumentResponse, EvaluationReport, EvidenceItem, InvestigationAuditList, InvestigationAuditRecord, InvestigationFeedbackRequest, InvestigationFeedbackResponse, InvestigationPreviewRequest, InvestigationPreviewResult, KnowledgeSearchRequest, KnowledgeSearchResult, OrganizationCreateRequest, OrganizationInvestigationRequest, OrganizationResponse
 from app.db import get_session, prepare_database
 from app.fixtures import DEMO_ORGANIZATION, citations_for
 from app.ingestion import SUPPORTED_CONTENT_TYPES, ingest_document
-from app.models import Document, Organization
+from app.models import Document, Investigation, InvestigationFeedback, Organization
 from app.retrieval import search_knowledge
 from app.evidence import create_evidence_pack
 from app.evaluations import run_baseline_evaluation
@@ -165,6 +165,34 @@ def investigation_audit_history(organization_id: str, session: Session = Depends
             )
             for investigation in investigations
         ],
+    )
+
+
+@app.post("/v1/organizations/{organization_id}/investigations/{investigation_id}/feedback", response_model=InvestigationFeedbackResponse, status_code=status.HTTP_201_CREATED)
+def submit_investigation_feedback(
+    organization_id: str,
+    investigation_id: str,
+    request: InvestigationFeedbackRequest,
+    session: Session = Depends(get_session),
+) -> InvestigationFeedbackResponse:
+    investigation = session.get(Investigation, investigation_id)
+    if not investigation or investigation.organization_id != organization_id:
+        raise HTTPException(status_code=404, detail="Investigation not found.")
+    feedback = InvestigationFeedback(
+        organization_id=organization_id,
+        investigation_id=investigation_id,
+        rating=request.rating,
+        comment=request.comment.strip() if request.comment else None,
+    )
+    session.add(feedback)
+    session.commit()
+    session.refresh(feedback)
+    return InvestigationFeedbackResponse(
+        id=feedback.id,
+        investigation_id=feedback.investigation_id,
+        rating=feedback.rating,
+        comment=feedback.comment,
+        created_at=feedback.created_at.isoformat(),
     )
 
 

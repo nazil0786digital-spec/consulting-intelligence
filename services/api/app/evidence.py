@@ -37,17 +37,18 @@ def create_evidence_pack(session: Session, *, organization_id: str, issue_text: 
             statement=("Review the cited organization sources and validate the missing context before drafting a conclusion." if citations else "Upload approved requirements, release notes, SOPs, or historical incidents before making a recommendation."),
         ),
     ]
-    session.add(
-        Investigation(
-            organization_id=organization_id,
-            issue_text=issue_text,
-            status="ready",
-            context_json={**context, "missing_information": missing, "evidence_source_ids": [citation.source_id for citation in citations], "retrieval_count": len(citations)},
-        )
+    investigation = Investigation(
+        organization_id=organization_id,
+        issue_text=issue_text,
+        status="ready",
+        context_json={**context, "missing_information": missing, "evidence_source_ids": [citation.source_id for citation in citations], "retrieval_count": len(citations)},
     )
+    session.add(investigation)
+    session.flush()
     session.commit()
     return InvestigationPreviewResult(
         organization_id=organization_id,
+        investigation_id=investigation.id,
         issue_summary=issue_text,
         extracted_context=context,
         evidence=evidence,

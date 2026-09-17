@@ -5,6 +5,7 @@ import { ChangeEvent, FormEvent, useState } from "react";
 type Citation = { source_id: string; title: string; source_type: string; section: string; excerpt: string };
 type Evidence = { category: string; statement: string; citations: Citation[] };
 type Result = {
+  investigation_id: string | null;
   issue_summary: string;
   extracted_context: Record<string, string | null>;
   evidence: Evidence[];
@@ -38,6 +39,8 @@ export default function Home() {
   const [creatingWorkspace, setCreatingWorkspace] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [auditHistory, setAuditHistory] = useState<AuditRecord[]>([]);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [feedbackStatus, setFeedbackStatus] = useState<string | null>(null);
 
   async function refreshAuditHistory(workspaceId: string) {
     const response = await fetch(`${API_URL}/v1/organizations/${workspaceId}/investigations`);
@@ -112,12 +115,25 @@ export default function Home() {
       });
       if (!response.ok) throw new Error("The investigation could not be created. Check that the API is running.");
       setResult(await response.json());
+      setFeedbackComment("");
+      setFeedbackStatus(null);
       if (organizationId) await refreshAuditHistory(organizationId);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unexpected error");
     } finally {
       setLoading(false);
     }
+  }
+
+  async function submitFeedback(rating: "helpful" | "needs_review") {
+    if (!organizationId || !result?.investigation_id) return;
+    setFeedbackStatus("Saving feedback…");
+    const response = await fetch(`${API_URL}/v1/organizations/${organizationId}/investigations/${result.investigation_id}/feedback`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rating, comment: feedbackComment || null })
+    });
+    setFeedbackStatus(response.ok ? "Feedback saved for pilot review." : "Feedback could not be saved.");
   }
 
   return (
@@ -201,6 +217,16 @@ export default function Home() {
           <article className="card"><p className="eyebrow">Draft Jira update</p><p>{result.jira_draft}</p></article>
           <article className="card"><p className="eyebrow">Draft client response</p><p>{result.client_response_draft}</p></article>
         </section>
+        {organizationId && result.investigation_id && <section className="card">
+          <p className="eyebrow">Pilot feedback</p>
+          <h2>Was this evidence pack useful?</h2>
+          <textarea aria-label="Feedback comment" value={feedbackComment} onChange={(event) => setFeedbackComment(event.target.value)} maxLength={2000} placeholder="Optional: what should improve?" />
+          <div className="feedback-actions">
+            <button type="button" onClick={() => submitFeedback("helpful")}>Helpful</button>
+            <button type="button" className="secondary" onClick={() => submitFeedback("needs_review")}>Needs review</button>
+          </div>
+          {feedbackStatus && <p className="notice">{feedbackStatus}</p>}
+        </section>}
         <p className="notice">{result.safety_notice}</p>
       </section>}
     </main>

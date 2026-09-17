@@ -13,6 +13,8 @@ textarea, input, select { border: 1px solid #c5cfdf; border-radius: 8px; font: i
 textarea { min-height: 130px; resize: vertical; }
 button { background: #1957c5; border: 0; border-radius: 8px; color: #fff; cursor: pointer; font: inherit; font-weight: 700; padding: 12px 16px; width: fit-content; }
 button:disabled { opacity: .65; cursor: wait; }
+.feedback-actions { display: flex; gap: 10px; margin-top: 12px; }
+.secondary { background: #53627d; }
 dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 0; }
 dt { color: #53627d; font-size: .78rem; text-transform: capitalize; }
 dd { font-weight: 650; margin: 4px 0 0; }

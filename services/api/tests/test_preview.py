@@ -81,6 +81,8 @@ class InvestigationPreviewTests(unittest.TestCase):
             json={"issue_text": "Client ABC Pharma reports PADER report count mismatch after upgrade to version 26.2. Expected 42, actual 37."},
         )
         self.assertEqual(investigation.status_code, 200, investigation.text)
+        investigation_id = investigation.json()["investigation_id"]
+        self.assertTrue(investigation_id)
         evidence = investigation.json()["evidence"]
         self.assertTrue(evidence[0]["citations"])
         self.assertEqual(evidence[0]["citations"][0]["source_id"], result["id"])
@@ -96,3 +98,17 @@ class InvestigationPreviewTests(unittest.TestCase):
         other_history = self.client.get(f"/v1/organizations/{other_organization.json()['id']}/investigations")
         self.assertEqual(other_history.status_code, 200)
         self.assertEqual(other_history.json()["investigations"], [])
+
+        feedback = self.client.post(
+            f"/v1/organizations/{organization_id}/investigations/{investigation_id}/feedback",
+            json={"rating": "helpful", "comment": "Citations were easy to review."},
+        )
+        self.assertEqual(feedback.status_code, 201, feedback.text)
+        self.assertEqual(feedback.json()["rating"], "helpful")
+        self.assertEqual(feedback.json()["investigation_id"], investigation_id)
+
+        cross_tenant_feedback = self.client.post(
+            f"/v1/organizations/{other_organization.json()['id']}/investigations/{investigation_id}/feedback",
+            json={"rating": "needs_review"},
+        )
+        self.assertEqual(cross_tenant_feedback.status_code, 404)

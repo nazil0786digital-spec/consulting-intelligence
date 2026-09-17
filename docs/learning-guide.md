@@ -43,6 +43,14 @@ When explaining a solution to an interviewer, client, or teammate, use this sequ
 
 **Interview answer:** “We begin auditability with a tenant-scoped, read-only event view. It gives pilot reviewers traceability without granting the product permission to change tickets, documents, or client systems.”
 
+## Phase 3 pilot feedback
+
+**Plain English:** after reviewing an evidence pack, a pilot user can say whether it was helpful or needs review, with an optional note.
+
+**Technical:** feedback is stored against the investigation and organization, and the API rejects attempts to submit feedback for an investigation in another workspace.
+
+**Trade-off:** feedback is a quality signal, not an approval. Authentication and reviewer identity are planned before broader deployment.
+
 ## Working habit
 
 For each delivered feature, we will capture:

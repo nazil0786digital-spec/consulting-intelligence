@@ -61,6 +61,7 @@ class EvidenceItem(BaseModel):
 
 class InvestigationPreviewResult(BaseModel):
     organization_id: str
+    investigation_id: str | None = None
     issue_summary: str
     extracted_context: dict[str, str | None]
     evidence: list[EvidenceItem]
@@ -94,3 +95,16 @@ class InvestigationAuditRecord(BaseModel):
 class InvestigationAuditList(BaseModel):
     organization_id: str
     investigations: list[InvestigationAuditRecord]
+
+
+class InvestigationFeedbackRequest(BaseModel):
+    rating: Literal["helpful", "needs_review"]
+    comment: str | None = Field(default=None, max_length=2_000)
+
+
+class InvestigationFeedbackResponse(BaseModel):
+    id: str
+    investigation_id: str
+    rating: str
+    comment: str | None
+    created_at: str
