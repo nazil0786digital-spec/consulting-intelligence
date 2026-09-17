@@ -9,7 +9,8 @@ p { line-height: 1.6; }
 .eyebrow { color: #53627d; font-size: .78rem; font-weight: 750; letter-spacing: .08em; margin: 0 0 8px; text-transform: uppercase; }
 .card { background: #fff; border: 1px solid #e2e7f0; border-radius: 14px; box-shadow: 0 8px 30px rgba(31, 45, 75, .05); margin: 16px 0; padding: 24px; }
 form { display: grid; gap: 12px; }
-textarea { border: 1px solid #c5cfdf; border-radius: 8px; font: inherit; min-height: 130px; padding: 12px; resize: vertical; }
+textarea, input { border: 1px solid #c5cfdf; border-radius: 8px; font: inherit; padding: 12px; }
+textarea { min-height: 130px; resize: vertical; }
 button { background: #1957c5; border: 0; border-radius: 8px; color: #fff; cursor: pointer; font: inherit; font-weight: 700; padding: 12px 16px; width: fit-content; }
 button:disabled { opacity: .65; cursor: wait; }
 dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 0; }
@@ -18,5 +19,6 @@ dd { font-weight: 650; margin: 4px 0 0; }
 blockquote { background: #f4f7fc; border-left: 3px solid #5f8fe8; border-radius: 0 8px 8px 0; line-height: 1.5; margin: 16px 0 0; padding: 12px; }
 .two-column { display: grid; gap: 16px; grid-template-columns: repeat(2, 1fr); }
 .notice { color: #53627d; font-size: .9rem; margin: 22px 4px; }
+.success { color: #187244; }
 .error { color: #ab1835; }
 @media (max-width: 640px) { main { padding-top: 32px; } dl, .two-column { grid-template-columns: 1fr; } }

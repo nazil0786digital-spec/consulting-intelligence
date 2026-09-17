@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 
 type Citation = { source_id: string; title: string; section: string; excerpt: string };
 type Evidence = { category: string; statement: string; citations: Citation[] };
@@ -28,6 +28,63 @@ export default function Home() {
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [workspaceName, setWorkspaceName] = useState("");
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [documentStatus, setDocumentStatus] = useState<string | null>(null);
+  const [ingestionError, setIngestionError] = useState<string | null>(null);
+  const [creatingWorkspace, setCreatingWorkspace] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  async function createWorkspace(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setCreatingWorkspace(true);
+    setIngestionError(null);
+    try {
+      const response = await fetch(`${API_URL}/v1/organizations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: workspaceName })
+      });
+      if (!response.ok) throw new Error("The workspace could not be created. Try another name.");
+      const workspace = await response.json();
+      setOrganizationId(workspace.id);
+      setDocumentStatus(`Workspace “${workspace.name}” is ready for approved knowledge.`);
+    } catch (reason) {
+      setIngestionError(reason instanceof Error ? reason.message : "Unexpected error");
+    } finally {
+      setCreatingWorkspace(false);
+    }
+  }
+
+  function chooseDocument(event: ChangeEvent<HTMLInputElement>) {
+    setDocumentFile(event.target.files?.[0] ?? null);
+    setDocumentStatus(null);
+    setIngestionError(null);
+  }
+
+  async function uploadDocument(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!organizationId || !documentFile) return;
+    setUploading(true);
+    setIngestionError(null);
+    try {
+      const formData = new FormData();
+      formData.set("file", documentFile);
+      formData.set("source_type", "document");
+      const response = await fetch(`${API_URL}/v1/organizations/${organizationId}/documents`, { method: "POST", body: formData });
+      if (!response.ok) {
+        const detail = await response.json().catch(() => null);
+        throw new Error(detail?.detail ?? "The document could not be indexed.");
+      }
+      const document = await response.json();
+      setDocumentStatus(`${document.title} indexed: ${document.chunk_count} traceable chunks, SHA-256 ${document.integrity_hash.slice(0, 12)}…`);
+    } catch (reason) {
+      setIngestionError(reason instanceof Error ? reason.message : "Unexpected error");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function investigate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,6 +112,22 @@ export default function Home() {
         <h1>Consulting Intelligence</h1>
         <p>Turn a consulting issue into evidence, unknowns, and a reviewable next step.</p>
       </header>
+
+      <section className="card">
+        <p className="eyebrow">Phase 2 knowledge workspace</p>
+        <h2>Prepare approved knowledge</h2>
+        {!organizationId ? <form onSubmit={createWorkspace}>
+          <label htmlFor="workspace">Workspace name</label>
+          <input id="workspace" value={workspaceName} onChange={(event) => setWorkspaceName(event.target.value)} minLength={2} maxLength={160} required placeholder="Example Consulting Team" />
+          <button disabled={creatingWorkspace}>{creatingWorkspace ? "Creating…" : "Create workspace"}</button>
+        </form> : <form onSubmit={uploadDocument}>
+          <label htmlFor="document">Approved UTF-8 text document</label>
+          <input id="document" type="file" accept=".txt,text/plain" onChange={chooseDocument} required />
+          <button disabled={!documentFile || uploading}>{uploading ? "Indexing…" : "Index document"}</button>
+        </form>}
+        {documentStatus && <p className="notice success">{documentStatus}</p>}
+        {ingestionError && <p className="error">{ingestionError}</p>}
+      </section>
 
       <section className="card">
         <h2>New investigation</h2>
