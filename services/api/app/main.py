@@ -1,9 +1,20 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.contracts import EvidenceItem, InvestigationPreviewRequest, InvestigationPreviewResult
 from app.fixtures import DEMO_ORGANIZATION, citations_for
 
 app = FastAPI(title="Consulting Intelligence API", version="0.1.0")
+
+# Phase 1 runs the web UI and API on different local ports. CORS permits only the
+# local UI origin; production will replace this with configured trusted origins.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
 
 
 @app.get("/health")
