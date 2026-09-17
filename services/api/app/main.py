@@ -3,11 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.contracts import DocumentResponse, EvidenceItem, InvestigationPreviewRequest, InvestigationPreviewResult, OrganizationCreateRequest, OrganizationResponse
+from app.contracts import DocumentResponse, EvidenceItem, InvestigationPreviewRequest, InvestigationPreviewResult, KnowledgeSearchRequest, KnowledgeSearchResult, OrganizationCreateRequest, OrganizationResponse
 from app.db import Base, engine, get_session
 from app.fixtures import DEMO_ORGANIZATION, citations_for
 from app.ingestion import ingest_text_document
 from app.models import Document, Organization
+from app.retrieval import search_knowledge
 
 # Import models before table setup so local development has the complete metadata.
 from app import models  # noqa: F401
@@ -97,6 +98,33 @@ def document_status(organization_id: str, document_id: str, session: Session = D
         integrity_hash=document.integrity_hash,
         chunk_count=len(document.chunks),
     )
+
+
+@app.post("/v1/organizations/{organization_id}/knowledge/search", response_model=list[KnowledgeSearchResult])
+def search_organization_knowledge(
+    organization_id: str,
+    request: KnowledgeSearchRequest,
+    session: Session = Depends(get_session),
+) -> list[KnowledgeSearchResult]:
+    if not session.get(Organization, organization_id):
+        raise HTTPException(status_code=404, detail="Organization not found.")
+    return [
+        KnowledgeSearchResult(
+            chunk_id=chunk.id,
+            document_id=document.id,
+            document_title=document.title,
+            source_type=document.source_type,
+            source_locator=chunk.source_locator,
+            excerpt=chunk.content[:600],
+            relevance_score=round(score, 3),
+        )
+        for chunk, document, score in search_knowledge(
+            session,
+            organization_id=organization_id,
+            query=request.query,
+            limit=request.limit,
+        )
+    ]
 
 
 @app.post("/v1/investigations/preview", response_model=InvestigationPreviewResult)

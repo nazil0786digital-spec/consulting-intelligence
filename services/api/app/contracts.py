@@ -21,6 +21,21 @@ class DocumentResponse(BaseModel):
     chunk_count: int
 
 
+class KnowledgeSearchRequest(BaseModel):
+    query: str = Field(min_length=3, max_length=2_000)
+    limit: int = Field(default=5, ge=1, le=10)
+
+
+class KnowledgeSearchResult(BaseModel):
+    chunk_id: str
+    document_id: str
+    document_title: str
+    source_type: str
+    source_locator: str
+    excerpt: str
+    relevance_score: float
+
+
 class InvestigationPreviewRequest(BaseModel):
     organization_id: str = Field(min_length=1, examples=["demo-consulting"])
     issue_text: str = Field(min_length=10, examples=["PADER report results differ after 26.2 upgrade."])

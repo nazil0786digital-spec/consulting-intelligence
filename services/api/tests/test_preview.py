@@ -68,3 +68,10 @@ class InvestigationPreviewTests(unittest.TestCase):
         status_response = self.client.get(f"/v1/organizations/{organization_id}/documents/{result['id']}")
         self.assertEqual(status_response.status_code, 200)
         self.assertEqual(status_response.json()["id"], result["id"])
+
+        search = self.client.post(
+            f"/v1/organizations/{organization_id}/knowledge/search",
+            json={"query": "release note content", "limit": 5},
+        )
+        self.assertEqual(search.status_code, 200, search.text)
+        self.assertGreater(search.json()[0]["relevance_score"], 0)

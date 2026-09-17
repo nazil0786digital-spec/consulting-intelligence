@@ -7,6 +7,7 @@ from app.db import Base
 from app.models import Document, Organization
 from app.repositories import documents_for_organization
 from app.ingestion import content_hash, ingest_text_document
+from app.retrieval import search_knowledge
 
 
 class TenantScopeTests(unittest.TestCase):
@@ -46,3 +47,22 @@ class TenantScopeTests(unittest.TestCase):
         self.assertEqual(document.status, "indexed")
         self.assertEqual(document.integrity_hash, content_hash(content))
         self.assertGreater(len(document.chunks), 1)
+
+    def test_knowledge_search_returns_relevant_chunks_only_from_the_requested_tenant(self) -> None:
+        ingest_text_document(
+            self.session,
+            organization_id=self.first.id,
+            title="Safety report guide",
+            source_type="guide",
+            content=b"The PADER report requires source population validation after every upgrade.",
+        )
+        ingest_text_document(
+            self.session,
+            organization_id=self.second.id,
+            title="Private second team guide",
+            source_type="guide",
+            content=b"The PADER report includes a confidential second-team procedure.",
+        )
+        matches = search_knowledge(self.session, organization_id=self.first.id, query="PADER source population report", limit=5)
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0][1].title, "Safety report guide")
