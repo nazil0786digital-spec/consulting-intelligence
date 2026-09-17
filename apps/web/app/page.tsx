@@ -2,7 +2,7 @@
 
 import { ChangeEvent, FormEvent, useState } from "react";
 
-type Citation = { source_id: string; title: string; section: string; excerpt: string };
+type Citation = { source_id: string; title: string; source_type: string; section: string; excerpt: string };
 type Evidence = { category: string; statement: string; citations: Citation[] };
 type Result = {
   issue_summary: string;
@@ -172,7 +172,7 @@ export default function Home() {
           <p className="eyebrow">{labels[item.category] ?? item.category}</p>
           <p>{item.statement}</p>
           {item.citations.map((citation) => <blockquote key={citation.source_id}>
-            <strong>{citation.title}</strong> · {citation.section}<br />
+            <strong>{citation.title}</strong> · {citation.source_type.replaceAll("_", " ")} · {citation.section}<br />
             {citation.excerpt}
           </blockquote>)}
         </article>)}

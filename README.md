@@ -63,4 +63,6 @@ npm run build
 
 ## Phase 2 progress
 
+Retrieval uses a documented, bounded source-authority multiplier (at most 10%), while every evidence citation identifies its source type. Relevance remains the dominant ranking signal.
+
 The API now includes organization-scoped persistence models for documents, document chunks, and investigations. It accepts UTF-8 `.txt`, text-based PDF, and DOCX documents, records a SHA-256 integrity hash of the original upload, creates traceable text chunks with page or paragraph locations, and exposes indexing status. Sources are classified as guides, requirements, release notes, SOPs, incidents, historical cases, RCAs, or general documents so evidence handling remains transparent. It provides tenant-scoped hybrid retrieval with source locations: a deterministic local vector fallback supports offline development, while an OpenAI embeddings adapter activates only when `OPENAI_API_KEY` is configured. Uploaded knowledge now feeds a citation-first evidence pack with transparent, deterministic extraction of client clues, module, version, issue type, and missing information. The local default is SQLite for development; PostgreSQL with pgvector persists production embeddings at ingestion. OCR for scanned PDFs is a future capability.

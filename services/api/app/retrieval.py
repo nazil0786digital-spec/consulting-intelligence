@@ -6,6 +6,11 @@ from sqlalchemy.orm import Session
 from app.embeddings import EmbeddingProvider, cosine_similarity, get_embedding_provider
 from app.models import Document, DocumentChunk
 
+SOURCE_AUTHORITY = {
+    "requirement": 1.00, "sop": 0.95, "release_note": 0.90, "rca": 0.85,
+    "incident": 0.75, "historical_case": 0.70, "guide": 0.70, "document": 0.60,
+}
+
 
 def normalized_terms(text: str) -> set[str]:
     return {term for term in re.findall(r"[a-z0-9]+", text.lower()) if len(term) > 1}
@@ -18,6 +23,11 @@ def lexical_relevance(query: str, content: str) -> float:
     if not query_terms or not content_terms:
         return 0.0
     return len(query_terms & content_terms) / len(query_terms)
+
+
+def source_authority_multiplier(source_type: str) -> float:
+    """Keep source governance visible and bounded: authority changes rank by at most 10%."""
+    return 0.90 + (0.10 * SOURCE_AUTHORITY.get(source_type, 0.60))
 
 
 def search_knowledge(
@@ -43,6 +53,7 @@ def search_knowledge(
         vector_score = max(0.0, cosine_similarity(query_vector, chunk_vector))
         # Hybrid scoring retains exact version/module matches while making the vector
         # provider replaceable. Production persists vectors in pgvector at ingestion.
-        score = (0.65 * lexical_score) + (0.35 * vector_score)
+        relevance_score = (0.65 * lexical_score) + (0.35 * vector_score)
+        score = relevance_score * source_authority_multiplier(document.source_type)
         matches.append((chunk, document, score))
     return sorted((match for match in matches if match[2] > 0), key=lambda match: match[2], reverse=True)[:limit]

@@ -8,7 +8,7 @@ from app.db import Base
 from app.models import Document, DocumentChunk, Organization
 from app.repositories import documents_for_organization
 from app.ingestion import content_hash, ingest_text_document
-from app.retrieval import search_knowledge
+from app.retrieval import search_knowledge, source_authority_multiplier
 from app.embeddings import DeterministicEmbeddingProvider, cosine_similarity
 
 
@@ -76,6 +76,11 @@ class TenantScopeTests(unittest.TestCase):
         related = cosine_similarity(query, provider.embed("PADER report requires validation"))
         unrelated = cosine_similarity(query, provider.embed("cosmetics shipment palette"))
         self.assertGreater(related, unrelated)
+
+    def test_source_authority_is_bounded_and_prefers_governed_sources(self) -> None:
+        self.assertGreater(source_authority_multiplier("requirement"), source_authority_multiplier("document"))
+        self.assertGreaterEqual(source_authority_multiplier("document"), 0.9)
+        self.assertLessEqual(source_authority_multiplier("requirement"), 1.0)
 
     def test_postgresql_uses_a_fixed_dimension_vector_column(self) -> None:
         vector_type = DocumentChunk.__table__.c.embedding.type.dialect_impl(postgresql.dialect())

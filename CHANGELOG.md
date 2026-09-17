@@ -17,6 +17,7 @@ All notable public changes are recorded here. Releases follow the process in [do
 - Deterministic issue-context extraction for client clues, module, version, issue type, and missing information.
 - Local ingestion for text-based PDF and DOCX documents, preserving original-file hashes and page or paragraph source locations.
 - Controlled evidence source classification for guides, requirements, release notes, SOPs, incidents, historical cases, and RCAs.
+- Bounded, documented source-authority ranking and source-type labels on evidence citations.
 
 ## v0.1.0 — 2026-09-17
 

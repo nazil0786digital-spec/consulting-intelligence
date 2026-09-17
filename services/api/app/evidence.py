@@ -10,7 +10,7 @@ def create_evidence_pack(session: Session, *, organization_id: str, issue_text: 
     context, missing = analyze_issue(issue_text)
     matches = search_knowledge(session, organization_id=organization_id, query=issue_text, limit=5)
     citations = [
-        Citation(source_id=document.id, title=document.title, section=chunk.source_locator, excerpt=chunk.content[:600])
+        Citation(source_id=document.id, title=document.title, source_type=document.source_type, section=chunk.source_locator, excerpt=chunk.content[:600])
         for chunk, document, _score in matches
     ]
     historical = next(
@@ -26,7 +26,7 @@ def create_evidence_pack(session: Session, *, organization_id: str, issue_text: 
         EvidenceItem(
             category="similar_case",
             statement=(f"A related historical source was found: {historical[1].title}." if historical else "No matching historical incident is present in the indexed knowledge."),
-            citations=([Citation(source_id=historical[1].id, title=historical[1].title, section=historical[0].source_locator, excerpt=historical[0].content[:600])] if historical else []),
+            citations=([Citation(source_id=historical[1].id, title=historical[1].title, source_type=historical[1].source_type, section=historical[0].source_locator, excerpt=historical[0].content[:600])] if historical else []),
         ),
         EvidenceItem(
             category="missing_information",

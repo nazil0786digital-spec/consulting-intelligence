@@ -23,6 +23,6 @@ def citations_for(issue_text: str) -> list[Citation]:
     terms = set(issue_text.lower().split())
     ranked = sorted(SOURCES, key=lambda source: len(terms.intersection(source["text"].lower().split())), reverse=True)
     return [
-        Citation(source_id=source["id"], title=source["title"], section=source["section"], excerpt=source["text"])
+        Citation(source_id=source["id"], title=source["title"], source_type="release_note" if source["id"].startswith("release") else "incident", section=source["section"], excerpt=source["text"])
         for source in ranked
     ]

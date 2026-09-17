@@ -48,6 +48,7 @@ class InvestigationPreviewRequest(BaseModel):
 class Citation(BaseModel):
     source_id: str
     title: str
+    source_type: str
     section: str
     excerpt: str
 
