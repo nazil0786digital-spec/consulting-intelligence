@@ -77,6 +77,14 @@ When explaining a solution to an interviewer, client, or teammate, use this sequ
 
 **Trade-off:** this preview does not create a Jira issue. A future approved integration will need authentication, explicit approval state, and an audit event for the external action.
 
+## Phase 4 approval state
+
+**Plain English:** a consultant can approve the prepared handoff inside the workspace, but approval alone never sends it anywhere.
+
+**Technical:** approval is a tenant-scoped state on the saved investigation. The handoff API remains `preview_only`; an external delivery capability does not exist.
+
+**Interview answer:** “We model approval separately from execution. That gives the workflow a clear control point and prevents an integration preview from becoming an accidental external write.”
+
 ## Working habit
 
 For each delivered feature, we will capture:

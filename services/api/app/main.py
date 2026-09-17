@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.contracts import DocumentResponse, EvaluationReport, EvidenceItem, FeedbackSummary, IntegrationHandoffPreview, InvestigationAuditList, InvestigationAuditRecord, InvestigationFeedbackRequest, InvestigationFeedbackResponse, InvestigationPreviewRequest, InvestigationPreviewResult, KnowledgeSearchRequest, KnowledgeSearchResult, OrganizationCreateRequest, OrganizationInvestigationRequest, OrganizationResponse
+from app.contracts import DocumentResponse, EvaluationReport, EvidenceItem, FeedbackSummary, IntegrationApprovalResponse, IntegrationHandoffPreview, InvestigationAuditList, InvestigationAuditRecord, InvestigationFeedbackRequest, InvestigationFeedbackResponse, InvestigationPreviewRequest, InvestigationPreviewResult, KnowledgeSearchRequest, KnowledgeSearchResult, OrganizationCreateRequest, OrganizationInvestigationRequest, OrganizationResponse
 from app.db import get_session, prepare_database
 from app.fixtures import DEMO_ORGANIZATION, citations_for
 from app.ingestion import SUPPORTED_CONTENT_TYPES, ingest_document
@@ -225,7 +225,8 @@ def jira_handoff_preview(
     return IntegrationHandoffPreview(
         integration="jira",
         mode="preview_only",
-        approval_required=True,
+        approval_required=not bool(context.get("jira_handoff_approved")),
+        approved=bool(context.get("jira_handoff_approved")),
         investigation_id=investigation.id,
         payload={
             "summary": f"Investigation: {investigation.issue_text[:120]}",
@@ -233,6 +234,25 @@ def jira_handoff_preview(
             "labels": labels,
             "evidence_source_ids": [str(source_id) for source_id in context.get("evidence_source_ids", [])],
         },
+    )
+
+
+@app.post("/v1/organizations/{organization_id}/investigations/{investigation_id}/handoffs/jira/approve", response_model=IntegrationApprovalResponse)
+def approve_jira_handoff(
+    organization_id: str,
+    investigation_id: str,
+    session: Session = Depends(get_session),
+) -> IntegrationApprovalResponse:
+    investigation = session.get(Investigation, investigation_id)
+    if not investigation or investigation.organization_id != organization_id:
+        raise HTTPException(status_code=404, detail="Investigation not found.")
+    investigation.context_json = {**investigation.context_json, "jira_handoff_approved": True}
+    session.commit()
+    return IntegrationApprovalResponse(
+        investigation_id=investigation.id,
+        integration="jira",
+        approved=True,
+        mode="preview_only",
     )
 
 

@@ -17,7 +17,7 @@ type Result = {
 };
 type AuditRecord = { id: string; issue_summary: string; status: string; created_at: string; evidence_source_count: number };
 type FeedbackSummary = { helpful_count: number; needs_review_count: number; total_count: number };
-type JiraHandoff = { integration: string; mode: string; approval_required: boolean; payload: { summary: string; description: string; labels: string[]; evidence_source_ids: string[] } };
+type JiraHandoff = { integration: string; mode: string; approval_required: boolean; approved: boolean; payload: { summary: string; description: string; labels: string[]; evidence_source_ids: string[] } };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 const initialIssue = "PADER report counts differ after an upgrade to version 26.2.";
@@ -143,6 +143,12 @@ export default function Home() {
     if (response.ok) setJiraHandoff(await response.json());
   }
 
+  async function approveJiraHandoff() {
+    if (!organizationId || !result?.investigation_id) return;
+    const response = await fetch(`${API_URL}/v1/organizations/${organizationId}/investigations/${result.investigation_id}/handoffs/jira/approve`, { method: "POST" });
+    if (response.ok) await prepareJiraHandoff();
+  }
+
   async function submitFeedback(rating: "helpful" | "needs_review") {
     if (!organizationId || !result?.investigation_id) return;
     setFeedbackStatus("Saving feedback…");
@@ -253,7 +259,11 @@ export default function Home() {
           <h2>Prepare Jira handoff</h2>
           <p className="hint">This creates a review-only payload. It does not send a ticket or contact any external system.</p>
           <button type="button" onClick={prepareJiraHandoff}>Show Jira preview</button>
-          {jiraHandoff && <pre className="handoff-preview">{JSON.stringify(jiraHandoff.payload, null, 2)}</pre>}
+          {jiraHandoff && <>
+            <p className={jiraHandoff.approved ? "notice success" : "notice"}>{jiraHandoff.approved ? "Approved internally. External delivery is still disabled." : "Approval is required before any future external delivery."}</p>
+            {!jiraHandoff.approved && <button type="button" className="secondary" onClick={approveJiraHandoff}>Approve handoff</button>}
+            <pre className="handoff-preview">{JSON.stringify(jiraHandoff.payload, null, 2)}</pre>
+          </>}
         </section>}
         {organizationId && result.investigation_id && <section className="card">
           <p className="eyebrow">Pilot feedback</p>

@@ -125,9 +125,23 @@ class InvestigationPreviewTests(unittest.TestCase):
         self.assertEqual(handoff.status_code, 200, handoff.text)
         self.assertEqual(handoff.json()["mode"], "preview_only")
         self.assertTrue(handoff.json()["approval_required"])
+        self.assertFalse(handoff.json()["approved"])
         self.assertIn("review-required", handoff.json()["payload"]["labels"])
+
+        approved_handoff = self.client.post(
+            f"/v1/organizations/{organization_id}/investigations/{investigation_id}/handoffs/jira/approve"
+        )
+        self.assertEqual(approved_handoff.status_code, 200, approved_handoff.text)
+        self.assertTrue(approved_handoff.json()["approved"])
+        approved_preview = self.client.get(f"/v1/organizations/{organization_id}/investigations/{investigation_id}/handoffs/jira")
+        self.assertTrue(approved_preview.json()["approved"])
+        self.assertFalse(approved_preview.json()["approval_required"])
 
         cross_tenant_handoff = self.client.get(
             f"/v1/organizations/{other_organization.json()['id']}/investigations/{investigation_id}/handoffs/jira"
         )
         self.assertEqual(cross_tenant_handoff.status_code, 404)
+        cross_tenant_approval = self.client.post(
+            f"/v1/organizations/{other_organization.json()['id']}/investigations/{investigation_id}/handoffs/jira/approve"
+        )
+        self.assertEqual(cross_tenant_approval.status_code, 404)
