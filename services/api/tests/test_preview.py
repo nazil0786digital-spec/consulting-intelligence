@@ -1,4 +1,5 @@
 import unittest
+from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
@@ -8,6 +9,10 @@ from app.main import app
 class InvestigationPreviewTests(unittest.TestCase):
     def setUp(self) -> None:
         self.client = TestClient(app)
+        self.client.__enter__()
+
+    def tearDown(self) -> None:
+        self.client.__exit__(None, None, None)
 
     def test_preview_returns_a_cited_four_part_evidence_pack(self) -> None:
         response = self.client.post(
@@ -43,3 +48,23 @@ class InvestigationPreviewTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers["access-control-allow-origin"], "http://localhost:3000")
+
+    def test_organization_can_upload_and_read_its_text_document_status(self) -> None:
+        organization = self.client.post("/v1/organizations", json={"name": f"Upload test {uuid4()}"})
+        self.assertEqual(organization.status_code, 201)
+        organization_id = organization.json()["id"]
+
+        upload = self.client.post(
+            f"/v1/organizations/{organization_id}/documents",
+            data={"source_type": "release_note"},
+            files={"file": ("release-notes.txt", b"Release note content " * 200, "text/plain")},
+        )
+        self.assertEqual(upload.status_code, 201, upload.text)
+        result = upload.json()
+        self.assertEqual(result["status"], "indexed")
+        self.assertGreater(result["chunk_count"], 1)
+        self.assertEqual(len(result["integrity_hash"]), 64)
+
+        status_response = self.client.get(f"/v1/organizations/{organization_id}/documents/{result['id']}")
+        self.assertEqual(status_response.status_code, 200)
+        self.assertEqual(status_response.json()["id"], result["id"])

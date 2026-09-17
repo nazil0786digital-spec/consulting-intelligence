@@ -1,9 +1,13 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
-from app.contracts import EvidenceItem, InvestigationPreviewRequest, InvestigationPreviewResult
-from app.db import Base, engine
+from app.contracts import DocumentResponse, EvidenceItem, InvestigationPreviewRequest, InvestigationPreviewResult, OrganizationCreateRequest, OrganizationResponse
+from app.db import Base, engine, get_session
 from app.fixtures import DEMO_ORGANIZATION, citations_for
+from app.ingestion import ingest_text_document
+from app.models import Document, Organization
 
 # Import models before table setup so local development has the complete metadata.
 from app import models  # noqa: F401
@@ -30,6 +34,69 @@ def create_local_tables() -> None:
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "mode": "fixture-backed"}
+
+
+@app.post("/v1/organizations", response_model=OrganizationResponse, status_code=status.HTTP_201_CREATED)
+def create_organization(request: OrganizationCreateRequest, session: Session = Depends(get_session)) -> OrganizationResponse:
+    organization = Organization(name=request.name)
+    session.add(organization)
+    try:
+        session.commit()
+    except IntegrityError as error:
+        session.rollback()
+        raise HTTPException(status_code=409, detail="An organization with that name already exists.") from error
+    session.refresh(organization)
+    return OrganizationResponse(id=organization.id, name=organization.name)
+
+
+@app.post("/v1/organizations/{organization_id}/documents", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
+async def upload_document(
+    organization_id: str,
+    file: UploadFile = File(...),
+    source_type: str = Form("document"),
+    session: Session = Depends(get_session),
+) -> DocumentResponse:
+    if not session.get(Organization, organization_id):
+        raise HTTPException(status_code=404, detail="Organization not found.")
+    if file.content_type not in {"text/plain", "application/octet-stream"}:
+        raise HTTPException(status_code=415, detail="Phase 2 currently accepts plain-text files only.")
+    content = await file.read()
+    try:
+        document = ingest_text_document(
+            session,
+            organization_id=organization_id,
+            title=file.filename or "untitled.txt",
+            source_type=source_type,
+            content=content,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    chunk_count = len(document.chunks)
+    return DocumentResponse(
+        id=document.id,
+        organization_id=document.organization_id,
+        title=document.title,
+        source_type=document.source_type,
+        status=document.status,
+        integrity_hash=document.integrity_hash,
+        chunk_count=chunk_count,
+    )
+
+
+@app.get("/v1/organizations/{organization_id}/documents/{document_id}", response_model=DocumentResponse)
+def document_status(organization_id: str, document_id: str, session: Session = Depends(get_session)) -> DocumentResponse:
+    document = session.get(Document, document_id)
+    if not document or document.organization_id != organization_id:
+        raise HTTPException(status_code=404, detail="Document not found.")
+    return DocumentResponse(
+        id=document.id,
+        organization_id=document.organization_id,
+        title=document.title,
+        source_type=document.source_type,
+        status=document.status,
+        integrity_hash=document.integrity_hash,
+        chunk_count=len(document.chunks),
+    )
 
 
 @app.post("/v1/investigations/preview", response_model=InvestigationPreviewResult)

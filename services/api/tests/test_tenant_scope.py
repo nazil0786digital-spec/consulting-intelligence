@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.db import Base
 from app.models import Document, Organization
 from app.repositories import documents_for_organization
+from app.ingestion import content_hash, ingest_text_document
 
 
 class TenantScopeTests(unittest.TestCase):
@@ -32,3 +33,16 @@ class TenantScopeTests(unittest.TestCase):
     def test_document_query_returns_only_requested_organization_documents(self) -> None:
         documents = documents_for_organization(self.session, self.first.id)
         self.assertEqual([document.title for document in documents], ["First team's release note"])
+
+    def test_ingestion_hashes_and_chunks_document_content(self) -> None:
+        content = b"release note " * 200
+        document = ingest_text_document(
+            self.session,
+            organization_id=self.first.id,
+            title="release-notes.txt",
+            source_type="release_note",
+            content=content,
+        )
+        self.assertEqual(document.status, "indexed")
+        self.assertEqual(document.integrity_hash, content_hash(content))
+        self.assertGreater(len(document.chunks), 1)

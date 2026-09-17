@@ -8,6 +8,7 @@ All notable public changes are recorded here. Releases follow the process in [do
 
 - Organization-scoped persistence models for documents, chunks, and investigations.
 - A tenant-scope regression test that prevents cross-organization document queries.
+- Plain-text document ingestion with SHA-256 integrity hashing, chunking, duplicate detection, and indexed-status API endpoints.
 
 ## v0.1.0 — 2026-09-17
 

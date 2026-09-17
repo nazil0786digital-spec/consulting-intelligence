@@ -63,4 +63,4 @@ npm run build
 
 ## Phase 2 progress
 
-The API now includes organization-scoped persistence models for documents, document chunks, and investigations. The local default is SQLite for development; PostgreSQL with pgvector will replace it for production retrieval. Document-upload and embedding jobs are the next capability.
+The API now includes organization-scoped persistence models for documents, document chunks, and investigations. It accepts UTF-8 `.txt` documents, records a SHA-256 integrity hash, creates traceable text chunks, and exposes indexing status. The local default is SQLite for development; PostgreSQL with pgvector will replace it for production retrieval. PDF/Word parsing and embedding jobs are the next capability.
