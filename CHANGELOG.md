@@ -4,6 +4,8 @@ All notable public changes are recorded here. Releases follow the process in [do
 
 ## Unreleased
 
+## v0.1.0 — 2026-09-17
+
 ### Added
 
 - Phase 1 investigation interface that renders the fixture-backed evidence pack.
