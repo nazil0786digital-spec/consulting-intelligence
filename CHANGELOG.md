@@ -11,6 +11,7 @@ All notable public changes are recorded here. Releases follow the process in [do
 - Plain-text document ingestion with SHA-256 integrity hashing, chunking, duplicate detection, and indexed-status API endpoints.
 - Browser workflow for creating a workspace and indexing an approved plain-text document.
 - Tenant-scoped knowledge-search endpoint with source excerpts, relevance scores, and isolation tests.
+- Hybrid retrieval adapter with offline deterministic vectors and optional OpenAI embeddings via environment-based configuration.
 
 ## v0.1.0 — 2026-09-17
 

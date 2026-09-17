@@ -8,6 +8,7 @@ from app.models import Document, Organization
 from app.repositories import documents_for_organization
 from app.ingestion import content_hash, ingest_text_document
 from app.retrieval import search_knowledge
+from app.embeddings import DeterministicEmbeddingProvider, cosine_similarity
 
 
 class TenantScopeTests(unittest.TestCase):
@@ -66,3 +67,10 @@ class TenantScopeTests(unittest.TestCase):
         matches = search_knowledge(self.session, organization_id=self.first.id, query="PADER source population report", limit=5)
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0][1].title, "Safety report guide")
+
+    def test_local_embedding_provider_assigns_higher_similarity_to_related_text(self) -> None:
+        provider = DeterministicEmbeddingProvider()
+        query = provider.embed("PADER report validation")
+        related = cosine_similarity(query, provider.embed("PADER report requires validation"))
+        unrelated = cosine_similarity(query, provider.embed("cosmetics shipment palette"))
+        self.assertGreater(related, unrelated)
