@@ -85,6 +85,8 @@ When explaining a solution to an interviewer, client, or teammate, use this sequ
 
 **Interview answer:** “We model approval separately from execution. That gives the workflow a clear control point and prevents an integration preview from becoming an accidental external write.”
 
+**Audit note:** this early approval record stores a timestamp but not reviewer identity. Identity-bound approvals require authentication before external delivery is enabled.
+
 ## Working habit
 
 For each delivered feature, we will capture:

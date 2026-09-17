@@ -17,7 +17,7 @@ type Result = {
 };
 type AuditRecord = { id: string; issue_summary: string; status: string; created_at: string; evidence_source_count: number };
 type FeedbackSummary = { helpful_count: number; needs_review_count: number; total_count: number };
-type JiraHandoff = { integration: string; mode: string; approval_required: boolean; approved: boolean; payload: { summary: string; description: string; labels: string[]; evidence_source_ids: string[] } };
+type JiraHandoff = { integration: string; mode: string; approval_required: boolean; approved: boolean; approved_at: string | null; payload: { summary: string; description: string; labels: string[]; evidence_source_ids: string[] } };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 const initialIssue = "PADER report counts differ after an upgrade to version 26.2.";
@@ -260,7 +260,7 @@ export default function Home() {
           <p className="hint">This creates a review-only payload. It does not send a ticket or contact any external system.</p>
           <button type="button" onClick={prepareJiraHandoff}>Show Jira preview</button>
           {jiraHandoff && <>
-            <p className={jiraHandoff.approved ? "notice success" : "notice"}>{jiraHandoff.approved ? "Approved internally. External delivery is still disabled." : "Approval is required before any future external delivery."}</p>
+            <p className={jiraHandoff.approved ? "notice success" : "notice"}>{jiraHandoff.approved ? `Approved internally at ${new Date(jiraHandoff.approved_at ?? "").toLocaleString()}. External delivery is still disabled.` : "Approval is required before any future external delivery."}</p>
             {!jiraHandoff.approved && <button type="button" className="secondary" onClick={approveJiraHandoff}>Approve handoff</button>}
             <pre className="handoff-preview">{JSON.stringify(jiraHandoff.payload, null, 2)}</pre>
           </>}

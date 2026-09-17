@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
@@ -227,6 +229,7 @@ def jira_handoff_preview(
         mode="preview_only",
         approval_required=not bool(context.get("jira_handoff_approved")),
         approved=bool(context.get("jira_handoff_approved")),
+        approved_at=context.get("jira_handoff_approved_at"),
         investigation_id=investigation.id,
         payload={
             "summary": f"Investigation: {investigation.issue_text[:120]}",
@@ -246,12 +249,18 @@ def approve_jira_handoff(
     investigation = session.get(Investigation, investigation_id)
     if not investigation or investigation.organization_id != organization_id:
         raise HTTPException(status_code=404, detail="Investigation not found.")
-    investigation.context_json = {**investigation.context_json, "jira_handoff_approved": True}
+    approved_at = datetime.now(timezone.utc).isoformat()
+    investigation.context_json = {
+        **investigation.context_json,
+        "jira_handoff_approved": True,
+        "jira_handoff_approved_at": approved_at,
+    }
     session.commit()
     return IntegrationApprovalResponse(
         investigation_id=investigation.id,
         integration="jira",
         approved=True,
+        approved_at=approved_at,
         mode="preview_only",
     )
 

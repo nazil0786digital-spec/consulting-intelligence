@@ -8,6 +8,7 @@ All notable public changes are recorded here. Releases follow the process in [do
 
 - Read-only, tenant-scoped Jira handoff preview with explicit approval requirement.
 - Internal Jira handoff approval state while keeping external delivery disabled.
+- Timestamped internal Jira handoff approval record for reviewer traceability.
 
 ## v0.3.0 — 2026-09-18
 

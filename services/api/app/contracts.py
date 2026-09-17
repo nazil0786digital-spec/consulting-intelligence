@@ -129,6 +129,7 @@ class IntegrationHandoffPreview(BaseModel):
     mode: Literal["preview_only"]
     approval_required: bool
     approved: bool
+    approved_at: str | None
     investigation_id: str
     payload: dict[str, str | list[str]]
 
@@ -137,4 +138,5 @@ class IntegrationApprovalResponse(BaseModel):
     investigation_id: str
     integration: Literal["jira"]
     approved: bool
+    approved_at: str
     mode: Literal["preview_only"]

@@ -133,9 +133,11 @@ class InvestigationPreviewTests(unittest.TestCase):
         )
         self.assertEqual(approved_handoff.status_code, 200, approved_handoff.text)
         self.assertTrue(approved_handoff.json()["approved"])
+        self.assertTrue(approved_handoff.json()["approved_at"])
         approved_preview = self.client.get(f"/v1/organizations/{organization_id}/investigations/{investigation_id}/handoffs/jira")
         self.assertTrue(approved_preview.json()["approved"])
         self.assertFalse(approved_preview.json()["approval_required"])
+        self.assertTrue(approved_preview.json()["approved_at"])
 
         cross_tenant_handoff = self.client.get(
             f"/v1/organizations/{other_organization.json()['id']}/investigations/{investigation_id}/handoffs/jira"
