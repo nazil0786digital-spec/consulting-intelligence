@@ -1,0 +1,19 @@
+# Private planning, internal architecture, and user-facing local deliverables
+outputs/
+
+# Local development
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+dist/
+coverage/
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/
