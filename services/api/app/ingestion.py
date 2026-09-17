@@ -13,6 +13,7 @@ from app.models import Document, DocumentChunk
 MAX_DOCUMENT_BYTES = 1_000_000
 CHUNK_WORDS = 180
 SUPPORTED_CONTENT_TYPES = {"text/plain", "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/octet-stream"}
+APPROVED_SOURCE_TYPES = {"document", "guide", "requirement", "release_note", "sop", "incident", "historical_case", "rca"}
 
 
 def content_hash(content: bytes) -> str:
@@ -66,6 +67,8 @@ def ingest_document(
         raise ValueError("The uploaded document is empty.")
     if len(content) > MAX_DOCUMENT_BYTES:
         raise ValueError("The uploaded document exceeds the 1 MB Phase 2 limit.")
+    if source_type not in APPROVED_SOURCE_TYPES:
+        raise ValueError("Choose an approved source type: document, guide, requirement, release_note, sop, incident, historical_case, or rca.")
     document_format, sections = extract_document_sections(title=title, content_type=content_type, content=content)
     digest = content_hash(content)
     duplicate = session.scalar(select(Document).where(Document.organization_id == organization_id, Document.integrity_hash == digest))

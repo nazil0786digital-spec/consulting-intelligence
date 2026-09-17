@@ -71,3 +71,12 @@ class DocumentFormatTests(unittest.TestCase):
         search = self.client.post(f"/v1/organizations/{self.organization_id}/knowledge/search", json={"query": "configuration report"})
         self.assertEqual(search.status_code, 200, search.text)
         self.assertEqual(search.json()[0]["source_locator"], "paragraph:1")
+
+    def test_rejects_an_unapproved_source_type(self) -> None:
+        response = self.client.post(
+            f"/v1/organizations/{self.organization_id}/documents",
+            data={"source_type": "untrusted"},
+            files={"file": ("notes.txt", b"Approved contents", "text/plain")},
+        )
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("approved source type", response.json()["detail"])

@@ -32,6 +32,7 @@ export default function Home() {
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [documentStatus, setDocumentStatus] = useState<string | null>(null);
+  const [sourceType, setSourceType] = useState("document");
   const [ingestionError, setIngestionError] = useState<string | null>(null);
   const [creatingWorkspace, setCreatingWorkspace] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -71,7 +72,7 @@ export default function Home() {
     try {
       const formData = new FormData();
       formData.set("file", documentFile);
-      formData.set("source_type", "document");
+      formData.set("source_type", sourceType);
       const response = await fetch(`${API_URL}/v1/organizations/${organizationId}/documents`, { method: "POST", body: formData });
       if (!response.ok) {
         const detail = await response.json().catch(() => null);
@@ -130,6 +131,17 @@ export default function Home() {
           <label htmlFor="document">Approved document</label>
           <input id="document" type="file" accept=".txt,.pdf,.docx,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={chooseDocument} required />
           <p className="hint">Supported: UTF-8 text, text-based PDF, and DOCX. Scanned PDFs require OCR and are not supported yet.</p>
+          <label htmlFor="sourceType">Evidence source type</label>
+          <select id="sourceType" value={sourceType} onChange={(event) => setSourceType(event.target.value)}>
+            <option value="document">General document</option>
+            <option value="guide">Product or process guide</option>
+            <option value="requirement">Requirement</option>
+            <option value="release_note">Release note</option>
+            <option value="sop">Standard operating procedure</option>
+            <option value="incident">Incident</option>
+            <option value="historical_case">Historical case</option>
+            <option value="rca">Root-cause analysis</option>
+          </select>
           <button disabled={!documentFile || uploading}>{uploading ? "Indexing…" : "Index document"}</button>
         </form>}
         {documentStatus && <p className="notice success">{documentStatus}</p>}
