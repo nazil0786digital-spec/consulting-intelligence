@@ -18,6 +18,7 @@ type Result = {
 type AuditRecord = { id: string; issue_summary: string; status: string; created_at: string; evidence_source_count: number };
 type FeedbackSummary = { helpful_count: number; needs_review_count: number; total_count: number };
 type JiraHandoff = { integration: string; mode: string; approval_required: boolean; approved: boolean; approved_at: string | null; payload: { summary: string; description: string; labels: string[]; evidence_source_ids: string[] } };
+type N8nWebhook = { delivery: string; event: { event_type: string; issue_summary: string; handoff: string; approved_at: string; evidence_source_ids: string[] } };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 const initialIssue = "PADER report counts differ after an upgrade to version 26.2.";
@@ -47,6 +48,7 @@ export default function Home() {
   const [feedbackStatus, setFeedbackStatus] = useState<string | null>(null);
   const [feedbackSummary, setFeedbackSummary] = useState<FeedbackSummary | null>(null);
   const [jiraHandoff, setJiraHandoff] = useState<JiraHandoff | null>(null);
+  const [n8nWebhook, setN8nWebhook] = useState<N8nWebhook | null>(null);
 
   async function refreshAuditHistory(workspaceId: string) {
     const response = await fetch(`${API_URL}/v1/organizations/${workspaceId}/investigations`);
@@ -129,6 +131,7 @@ export default function Home() {
       setFeedbackComment("");
       setFeedbackStatus(null);
       setJiraHandoff(null);
+      setN8nWebhook(null);
       if (organizationId) await refreshAuditHistory(organizationId);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unexpected error");
@@ -147,6 +150,12 @@ export default function Home() {
     if (!organizationId || !result?.investigation_id) return;
     const response = await fetch(`${API_URL}/v1/organizations/${organizationId}/investigations/${result.investigation_id}/handoffs/jira/approve`, { method: "POST" });
     if (response.ok) await prepareJiraHandoff();
+  }
+
+  async function prepareN8nWebhook() {
+    if (!organizationId || !result?.investigation_id) return;
+    const response = await fetch(`${API_URL}/v1/organizations/${organizationId}/investigations/${result.investigation_id}/handoffs/n8n`);
+    if (response.ok) setN8nWebhook(await response.json());
   }
 
   async function submitFeedback(rating: "helpful" | "needs_review") {
@@ -262,7 +271,9 @@ export default function Home() {
           {jiraHandoff && <>
             <p className={jiraHandoff.approved ? "notice success" : "notice"}>{jiraHandoff.approved ? `Approved internally at ${new Date(jiraHandoff.approved_at ?? "").toLocaleString()}. External delivery is still disabled.` : "Approval is required before any future external delivery."}</p>
             {!jiraHandoff.approved && <button type="button" className="secondary" onClick={approveJiraHandoff}>Approve handoff</button>}
+            {jiraHandoff.approved && <button type="button" className="secondary" onClick={prepareN8nWebhook}>Show n8n webhook preview</button>}
             <pre className="handoff-preview">{JSON.stringify(jiraHandoff.payload, null, 2)}</pre>
+            {n8nWebhook && <pre className="handoff-preview">{JSON.stringify(n8nWebhook.event, null, 2)}</pre>}
           </>}
         </section>}
         {organizationId && result.investigation_id && <section className="card">

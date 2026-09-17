@@ -140,3 +140,11 @@ class IntegrationApprovalResponse(BaseModel):
     approved: bool
     approved_at: str
     mode: Literal["preview_only"]
+
+
+class N8nWebhookPreview(BaseModel):
+    integration: Literal["n8n"]
+    delivery: Literal["disabled"]
+    approval_required: bool
+    investigation_id: str
+    event: dict[str, str | list[str]]

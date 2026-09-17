@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.contracts import DocumentResponse, EvaluationReport, EvidenceItem, FeedbackSummary, IntegrationApprovalResponse, IntegrationHandoffPreview, InvestigationAuditList, InvestigationAuditRecord, InvestigationFeedbackRequest, InvestigationFeedbackResponse, InvestigationPreviewRequest, InvestigationPreviewResult, KnowledgeSearchRequest, KnowledgeSearchResult, OrganizationCreateRequest, OrganizationInvestigationRequest, OrganizationResponse
+from app.contracts import DocumentResponse, EvaluationReport, EvidenceItem, FeedbackSummary, IntegrationApprovalResponse, IntegrationHandoffPreview, InvestigationAuditList, InvestigationAuditRecord, InvestigationFeedbackRequest, InvestigationFeedbackResponse, InvestigationPreviewRequest, InvestigationPreviewResult, KnowledgeSearchRequest, KnowledgeSearchResult, N8nWebhookPreview, OrganizationCreateRequest, OrganizationInvestigationRequest, OrganizationResponse
 from app.db import get_session, prepare_database
 from app.fixtures import DEMO_ORGANIZATION, citations_for
 from app.ingestion import SUPPORTED_CONTENT_TYPES, ingest_document
@@ -262,6 +262,33 @@ def approve_jira_handoff(
         approved=True,
         approved_at=approved_at,
         mode="preview_only",
+    )
+
+
+@app.get("/v1/organizations/{organization_id}/investigations/{investigation_id}/handoffs/n8n", response_model=N8nWebhookPreview)
+def n8n_webhook_preview(
+    organization_id: str,
+    investigation_id: str,
+    session: Session = Depends(get_session),
+) -> N8nWebhookPreview:
+    investigation = session.get(Investigation, investigation_id)
+    if not investigation or investigation.organization_id != organization_id:
+        raise HTTPException(status_code=404, detail="Investigation not found.")
+    context = investigation.context_json
+    if not context.get("jira_handoff_approved"):
+        raise HTTPException(status_code=409, detail="Approve the handoff internally before preparing an n8n event.")
+    return N8nWebhookPreview(
+        integration="n8n",
+        delivery="disabled",
+        approval_required=False,
+        investigation_id=investigation.id,
+        event={
+            "event_type": "consulting.intelligence.handoff.approved",
+            "issue_summary": investigation.issue_text,
+            "handoff": "jira",
+            "approved_at": str(context["jira_handoff_approved_at"]),
+            "evidence_source_ids": [str(source_id) for source_id in context.get("evidence_source_ids", [])],
+        },
     )
 
 

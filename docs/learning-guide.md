@@ -87,6 +87,14 @@ When explaining a solution to an interviewer, client, or teammate, use this sequ
 
 **Audit note:** this early approval record stores a timestamp but not reviewer identity. Identity-bound approvals require authentication before external delivery is enabled.
 
+## Phase 4 n8n event preview
+
+**Plain English:** after approval, the user can inspect the event that a future n8n workflow would receive. The product still does not make a webhook call.
+
+**Technical:** the n8n preview endpoint is gated by the internal approval state and returns a stable event name, issue summary, approval timestamp, and evidence IDs with `delivery: disabled`.
+
+**Interview answer:** “Before enabling a webhook, we establish and test the event contract in dry-run mode. n8n can then map this approved event to a human-reviewed workflow without the application owning arbitrary automation.”
+
 ## Working habit
 
 For each delivered feature, we will capture:

@@ -128,6 +128,11 @@ class InvestigationPreviewTests(unittest.TestCase):
         self.assertFalse(handoff.json()["approved"])
         self.assertIn("review-required", handoff.json()["payload"]["labels"])
 
+        n8n_before_approval = self.client.get(
+            f"/v1/organizations/{organization_id}/investigations/{investigation_id}/handoffs/n8n"
+        )
+        self.assertEqual(n8n_before_approval.status_code, 409)
+
         approved_handoff = self.client.post(
             f"/v1/organizations/{organization_id}/investigations/{investigation_id}/handoffs/jira/approve"
         )
@@ -138,6 +143,12 @@ class InvestigationPreviewTests(unittest.TestCase):
         self.assertTrue(approved_preview.json()["approved"])
         self.assertFalse(approved_preview.json()["approval_required"])
         self.assertTrue(approved_preview.json()["approved_at"])
+        n8n_after_approval = self.client.get(
+            f"/v1/organizations/{organization_id}/investigations/{investigation_id}/handoffs/n8n"
+        )
+        self.assertEqual(n8n_after_approval.status_code, 200, n8n_after_approval.text)
+        self.assertEqual(n8n_after_approval.json()["delivery"], "disabled")
+        self.assertEqual(n8n_after_approval.json()["event"]["event_type"], "consulting.intelligence.handoff.approved")
 
         cross_tenant_handoff = self.client.get(
             f"/v1/organizations/{other_organization.json()['id']}/investigations/{investigation_id}/handoffs/jira"
