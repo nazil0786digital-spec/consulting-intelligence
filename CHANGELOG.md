@@ -4,6 +4,11 @@ All notable public changes are recorded here. Releases follow the process in [do
 
 ## Unreleased
 
+### Added
+
+- Organization-scoped persistence models for documents, chunks, and investigations.
+- A tenant-scope regression test that prevents cross-organization document queries.
+
 ## v0.1.0 — 2026-09-17
 
 ### Added

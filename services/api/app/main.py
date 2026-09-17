@@ -2,7 +2,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.contracts import EvidenceItem, InvestigationPreviewRequest, InvestigationPreviewResult
+from app.db import Base, engine
 from app.fixtures import DEMO_ORGANIZATION, citations_for
+
+# Import models before table setup so local development has the complete metadata.
+from app import models  # noqa: F401
 
 app = FastAPI(title="Consulting Intelligence API", version="0.1.0")
 
@@ -15,6 +19,12 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
+
+
+@app.on_event("startup")
+def create_local_tables() -> None:
+    """Temporary Phase 2 local setup; production will use reviewed migrations."""
+    Base.metadata.create_all(bind=engine)
 
 
 @app.get("/health")
