@@ -4,6 +4,7 @@ import re
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.embeddings import EmbeddingProvider, get_embedding_provider
 from app.models import Document, DocumentChunk
 
 
@@ -28,6 +29,7 @@ def ingest_text_document(
     title: str,
     source_type: str,
     content: bytes,
+    embedding_provider: EmbeddingProvider | None = None,
 ) -> Document:
     if not content:
         raise ValueError("The uploaded document is empty.")
@@ -52,6 +54,7 @@ def ingest_text_document(
     if not chunks:
         raise ValueError("The uploaded document contains no indexable text.")
 
+    provider = embedding_provider or get_embedding_provider()
     document = Document(
         organization_id=organization_id,
         title=title,
@@ -69,6 +72,7 @@ def ingest_text_document(
                 document_id=document.id,
                 content=chunk,
                 source_locator=f"chunk:{index + 1}",
+                embedding=provider.embed(chunk),
                 metadata_json={"chunk_index": index, "word_count": len(chunk.split())},
             )
             for index, chunk in enumerate(chunks)

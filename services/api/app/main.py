@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.contracts import DocumentResponse, EvidenceItem, InvestigationPreviewRequest, InvestigationPreviewResult, KnowledgeSearchRequest, KnowledgeSearchResult, OrganizationCreateRequest, OrganizationResponse
-from app.db import Base, engine, get_session
+from app.db import get_session, prepare_database
 from app.fixtures import DEMO_ORGANIZATION, citations_for
 from app.ingestion import ingest_text_document
 from app.models import Document, Organization
@@ -29,7 +29,7 @@ app.add_middleware(
 @app.on_event("startup")
 def create_local_tables() -> None:
     """Temporary Phase 2 local setup; production will use reviewed migrations."""
-    Base.metadata.create_all(bind=engine)
+    prepare_database()
 
 
 @app.get("/health")

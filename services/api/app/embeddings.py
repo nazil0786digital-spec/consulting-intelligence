@@ -5,7 +5,9 @@ import re
 from typing import Protocol
 
 
-LOCAL_VECTOR_DIMENSIONS = 128
+# Match text-embedding-3-small's default dimensions so the local fallback and
+# PostgreSQL vector column share one storage contract.
+LOCAL_VECTOR_DIMENSIONS = 1536
 
 
 class EmbeddingProvider(Protocol):

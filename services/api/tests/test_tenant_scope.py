@@ -1,10 +1,11 @@
 import unittest
 
 from sqlalchemy import create_engine
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Session
 
 from app.db import Base
-from app.models import Document, Organization
+from app.models import Document, DocumentChunk, Organization
 from app.repositories import documents_for_organization
 from app.ingestion import content_hash, ingest_text_document
 from app.retrieval import search_knowledge
@@ -48,6 +49,7 @@ class TenantScopeTests(unittest.TestCase):
         self.assertEqual(document.status, "indexed")
         self.assertEqual(document.integrity_hash, content_hash(content))
         self.assertGreater(len(document.chunks), 1)
+        self.assertEqual(len(document.chunks[0].embedding or []), 1536)
 
     def test_knowledge_search_returns_relevant_chunks_only_from_the_requested_tenant(self) -> None:
         ingest_text_document(
@@ -74,3 +76,7 @@ class TenantScopeTests(unittest.TestCase):
         related = cosine_similarity(query, provider.embed("PADER report requires validation"))
         unrelated = cosine_similarity(query, provider.embed("cosmetics shipment palette"))
         self.assertGreater(related, unrelated)
+
+    def test_postgresql_uses_a_fixed_dimension_vector_column(self) -> None:
+        vector_type = DocumentChunk.__table__.c.embedding.type.dialect_impl(postgresql.dialect())
+        self.assertEqual(str(vector_type), "VECTOR(1536)")

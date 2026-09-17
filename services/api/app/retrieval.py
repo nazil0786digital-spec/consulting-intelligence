@@ -39,7 +39,8 @@ def search_knowledge(
     matches = []
     for chunk, document in session.execute(statement).all():
         lexical_score = lexical_relevance(query, chunk.content)
-        vector_score = max(0.0, cosine_similarity(query_vector, provider.embed(chunk.content)))
+        chunk_vector = chunk.embedding or provider.embed(chunk.content)
+        vector_score = max(0.0, cosine_similarity(query_vector, chunk_vector))
         # Hybrid scoring retains exact version/module matches while making the vector
         # provider replaceable. Production persists vectors in pgvector at ingestion.
         score = (0.65 * lexical_score) + (0.35 * vector_score)

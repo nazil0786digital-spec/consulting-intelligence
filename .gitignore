@@ -13,6 +13,7 @@ node_modules/
 .next/
 dist/
 coverage/
+work/
 
 # OS/editor files
 .DS_Store
