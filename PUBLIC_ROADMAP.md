@@ -23,6 +23,8 @@ Add knowledge ingestion, issue analysis, retrieval, similar-case discovery, cite
 
 **Public outcome:** a consultant can use approved project knowledge to prepare a reviewable investigation faster.
 
+**Released:** [v0.2.0](docs/releases/v0.2.0.md) provides the first knowledge and evidence workspace. Pilot quality work is next.
+
 ### Phase 3 — Pilot quality and reliability
 
 Add evaluation scenarios, quality monitoring, error handling, audit visibility, and a controlled pilot feedback loop.

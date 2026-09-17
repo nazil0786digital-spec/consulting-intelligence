@@ -4,6 +4,8 @@ All notable public changes are recorded here. Releases follow the process in [do
 
 ## Unreleased
 
+## v0.2.0 — 2026-09-18
+
 ### Added
 
 - Organization-scoped persistence models for documents, chunks, and investigations.
