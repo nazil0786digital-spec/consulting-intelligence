@@ -15,6 +15,7 @@ All notable public changes are recorded here. Releases follow the process in [do
 - Vector persistence contract: `vector(1536)` on PostgreSQL and JSON vectors for offline SQLite development.
 - Organization investigation endpoint that turns retrieved uploaded knowledge into a citation-first evidence pack.
 - Deterministic issue-context extraction for client clues, module, version, issue type, and missing information.
+- Local ingestion for text-based PDF and DOCX documents, preserving original-file hashes and page or paragraph source locations.
 
 ## v0.1.0 — 2026-09-17
 

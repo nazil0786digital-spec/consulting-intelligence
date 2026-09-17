@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.contracts import DocumentResponse, EvidenceItem, InvestigationPreviewRequest, InvestigationPreviewResult, KnowledgeSearchRequest, KnowledgeSearchResult, OrganizationCreateRequest, OrganizationInvestigationRequest, OrganizationResponse
 from app.db import get_session, prepare_database
 from app.fixtures import DEMO_ORGANIZATION, citations_for
-from app.ingestion import ingest_text_document
+from app.ingestion import SUPPORTED_CONTENT_TYPES, ingest_document
 from app.models import Document, Organization
 from app.retrieval import search_knowledge
 from app.evidence import create_evidence_pack
@@ -60,15 +60,16 @@ async def upload_document(
 ) -> DocumentResponse:
     if not session.get(Organization, organization_id):
         raise HTTPException(status_code=404, detail="Organization not found.")
-    if file.content_type not in {"text/plain", "application/octet-stream"}:
-        raise HTTPException(status_code=415, detail="Phase 2 currently accepts plain-text files only.")
+    if file.content_type not in SUPPORTED_CONTENT_TYPES:
+        raise HTTPException(status_code=415, detail="Supported documents are UTF-8 .txt, text-based .pdf, and .docx files.")
     content = await file.read()
     try:
-        document = ingest_text_document(
+        document = ingest_document(
             session,
             organization_id=organization_id,
             title=file.filename or "untitled.txt",
             source_type=source_type,
+            content_type=file.content_type,
             content=content,
         )
     except ValueError as error:

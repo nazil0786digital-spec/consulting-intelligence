@@ -127,8 +127,9 @@ export default function Home() {
           <input id="workspace" value={workspaceName} onChange={(event) => setWorkspaceName(event.target.value)} minLength={2} maxLength={160} required placeholder="Example Consulting Team" />
           <button disabled={creatingWorkspace}>{creatingWorkspace ? "Creating…" : "Create workspace"}</button>
         </form> : <form onSubmit={uploadDocument}>
-          <label htmlFor="document">Approved UTF-8 text document</label>
-          <input id="document" type="file" accept=".txt,text/plain" onChange={chooseDocument} required />
+          <label htmlFor="document">Approved document</label>
+          <input id="document" type="file" accept=".txt,.pdf,.docx,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={chooseDocument} required />
+          <p className="hint">Supported: UTF-8 text, text-based PDF, and DOCX. Scanned PDFs require OCR and are not supported yet.</p>
           <button disabled={!documentFile || uploading}>{uploading ? "Indexing…" : "Index document"}</button>
         </form>}
         {documentStatus && <p className="notice success">{documentStatus}</p>}
