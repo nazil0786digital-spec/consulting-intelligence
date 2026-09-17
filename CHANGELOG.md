@@ -9,6 +9,7 @@ All notable public changes are recorded here. Releases follow the process in [do
 - Phase 3 sanitized baseline evaluation suite and API report for expected evidence retrieval.
 - Tenant-scoped, read-only investigation audit history in the API and workspace interface.
 - Pilot feedback capture for evidence packs, with tenant-scoped investigation validation.
+- Visible evidence-pack quality checklist for citations, context completeness, and mandatory human review.
 
 ## v0.2.0 — 2026-09-18
 

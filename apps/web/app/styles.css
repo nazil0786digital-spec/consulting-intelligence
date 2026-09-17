@@ -27,4 +27,8 @@ blockquote { background: #f4f7fc; border-left: 3px solid #5f8fe8; border-radius:
 .audit-list { display: grid; gap: 12px; list-style: none; margin: 0; padding: 0; }
 .audit-list li { border-top: 1px solid #e2e7f0; color: #53627d; line-height: 1.55; padding-top: 12px; }
 .audit-list strong { color: #172033; }
+.quality-list { display: grid; gap: 12px; list-style: none; margin: 0; padding: 0; }
+.quality-list li { border-left: 3px solid #ab1835; line-height: 1.55; padding-left: 12px; }
+.quality-list .pass { border-color: #187244; }
+.quality-list .review { border-color: #b36a00; }
 @media (max-width: 640px) { main { padding-top: 32px; } dl, .two-column { grid-template-columns: 1fr; } }

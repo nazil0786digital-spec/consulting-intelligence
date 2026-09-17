@@ -67,7 +67,14 @@ class InvestigationPreviewResult(BaseModel):
     evidence: list[EvidenceItem]
     jira_draft: str
     client_response_draft: str
+    quality_checks: list["QualityCheck"] = []
     safety_notice: str = "Drafts require human review. This service does not perform external actions."
+
+
+class QualityCheck(BaseModel):
+    name: str
+    passed: bool
+    detail: str
 
 
 class EvaluationCaseResult(BaseModel):

@@ -87,6 +87,9 @@ class InvestigationPreviewTests(unittest.TestCase):
         self.assertTrue(evidence[0]["citations"])
         self.assertEqual(evidence[0]["citations"][0]["source_id"], result["id"])
         self.assertEqual(investigation.json()["extracted_context"]["module"], "Aggregate Reporting")
+        quality_checks = {check["name"]: check for check in investigation.json()["quality_checks"]}
+        self.assertTrue(quality_checks["evidence_sources_available"]["passed"])
+        self.assertFalse(quality_checks["human_review_required"]["passed"])
 
         history = self.client.get(f"/v1/organizations/{organization_id}/investigations")
         self.assertEqual(history.status_code, 200, history.text)

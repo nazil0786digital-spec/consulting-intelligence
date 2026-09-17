@@ -4,6 +4,7 @@ import { ChangeEvent, FormEvent, useState } from "react";
 
 type Citation = { source_id: string; title: string; source_type: string; section: string; excerpt: string };
 type Evidence = { category: string; statement: string; citations: Citation[] };
+type QualityCheck = { name: string; passed: boolean; detail: string };
 type Result = {
   investigation_id: string | null;
   issue_summary: string;
@@ -11,6 +12,7 @@ type Result = {
   evidence: Evidence[];
   jira_draft: string;
   client_response_draft: string;
+  quality_checks: QualityCheck[];
   safety_notice: string;
 };
 type AuditRecord = { id: string; issue_summary: string; status: string; created_at: string; evidence_source_count: number };
@@ -217,6 +219,16 @@ export default function Home() {
           <article className="card"><p className="eyebrow">Draft Jira update</p><p>{result.jira_draft}</p></article>
           <article className="card"><p className="eyebrow">Draft client response</p><p>{result.client_response_draft}</p></article>
         </section>
+        {result.quality_checks.length > 0 && <section className="card">
+          <p className="eyebrow">Phase 3 quality check</p>
+          <h2>Review readiness</h2>
+          <ul className="quality-list">
+            {result.quality_checks.map((check) => <li key={check.name} className={check.passed ? "pass" : "review"}>
+              <strong>{check.passed ? "Ready" : "Review"} · {check.name.replaceAll("_", " ")}</strong><br />
+              {check.detail}
+            </li>)}
+          </ul>
+        </section>}
         {organizationId && result.investigation_id && <section className="card">
           <p className="eyebrow">Pilot feedback</p>
           <h2>Was this evidence pack useful?</h2>

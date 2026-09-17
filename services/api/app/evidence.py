@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.contracts import Citation, EvidenceItem, InvestigationPreviewResult
+from app.contracts import Citation, EvidenceItem, InvestigationPreviewResult, QualityCheck
 from app.issue_analysis import analyze_issue
 from app.models import Investigation
 from app.retrieval import search_knowledge
@@ -54,4 +54,21 @@ def create_evidence_pack(session: Session, *, organization_id: str, issue_text: 
         evidence=evidence,
         jira_draft="Investigation initiated. The evidence pack identifies approved knowledge sources and the information needed before a conclusion is reached.",
         client_response_draft="Thank you for reporting this issue. We are reviewing the available information and will request any missing details needed to complete the investigation.",
+        quality_checks=[
+            QualityCheck(
+                name="evidence_sources_available",
+                passed=bool(citations),
+                detail=f"{len(citations)} approved source citation(s) retrieved." if citations else "No approved source matched; do not draw a conclusion.",
+            ),
+            QualityCheck(
+                name="context_completeness",
+                passed=not missing,
+                detail="Core issue context was identified." if not missing else f"Still needed: {', '.join(missing)}.",
+            ),
+            QualityCheck(
+                name="human_review_required",
+                passed=False,
+                detail="A consultant must validate cited evidence and any recommendation before using it externally.",
+            ),
+        ],
     )

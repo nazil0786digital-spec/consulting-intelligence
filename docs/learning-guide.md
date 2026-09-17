@@ -51,6 +51,14 @@ When explaining a solution to an interviewer, client, or teammate, use this sequ
 
 **Trade-off:** feedback is a quality signal, not an approval. Authentication and reviewer identity are planned before broader deployment.
 
+## Phase 3 quality checklist
+
+**Plain English:** every evidence pack tells the reviewer if it found approved sources, whether key context is still missing, and that a human review is mandatory.
+
+**Technical:** quality checks are deterministic rules returned with the result. A failed check is a reviewer signal, not a silent fallback or an automated decision.
+
+**Interview answer:** “We turn quality expectations into visible, testable checks. The UI does not hide uncertainty; it tells the consultant exactly what still needs review.”
+
 ## Working habit
 
 For each delivered feature, we will capture:
