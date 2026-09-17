@@ -25,6 +25,16 @@ When explaining a solution to an interviewer, client, or teammate, use this sequ
 | 5 | Agent orchestration, LangGraph, controlled tools, guardrails, and read-only data investigation |
 | 6 | Enterprise deployment, SSO, scaling, governance, cost control, and product metrics |
 
+## Phase 3 baseline evaluation
+
+**Plain English:** before showing the product to pilot users, we keep a small set of sanitized example issues and check that the expected evidence sources are still returned after a change.
+
+**Technical:** `GET /v1/evaluations/baseline` runs version-controlled fixture scenarios and reports the pass/fail result for each one. It never reads customer workspace data, so the quality baseline is reproducible and safe to publish.
+
+**Interview answer:** “We evaluate retrieval with curated cases that define expected citations. We version the cases with the code, run them in CI, and keep customer data out of the baseline suite.”
+
+**Trade-off:** this is a small regression baseline, not a substitute for pilot-user feedback or a broader labeled evaluation set.
+
 ## Working habit
 
 For each delivered feature, we will capture:

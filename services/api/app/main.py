@@ -3,13 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.contracts import DocumentResponse, EvidenceItem, InvestigationPreviewRequest, InvestigationPreviewResult, KnowledgeSearchRequest, KnowledgeSearchResult, OrganizationCreateRequest, OrganizationInvestigationRequest, OrganizationResponse
+from app.contracts import DocumentResponse, EvaluationReport, EvidenceItem, InvestigationPreviewRequest, InvestigationPreviewResult, KnowledgeSearchRequest, KnowledgeSearchResult, OrganizationCreateRequest, OrganizationInvestigationRequest, OrganizationResponse
 from app.db import get_session, prepare_database
 from app.fixtures import DEMO_ORGANIZATION, citations_for
 from app.ingestion import SUPPORTED_CONTENT_TYPES, ingest_document
 from app.models import Document, Organization
 from app.retrieval import search_knowledge
 from app.evidence import create_evidence_pack
+from app.evaluations import run_baseline_evaluation
 
 # Import models before table setup so local development has the complete metadata.
 from app import models  # noqa: F401
@@ -36,6 +37,12 @@ def create_local_tables() -> None:
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "mode": "fixture-backed"}
+
+
+@app.get("/v1/evaluations/baseline", response_model=EvaluationReport)
+def baseline_evaluation() -> EvaluationReport:
+    """Phase 3 quality baseline using only sanitized, version-controlled scenarios."""
+    return run_baseline_evaluation()
 
 
 @app.post("/v1/organizations", response_model=OrganizationResponse, status_code=status.HTTP_201_CREATED)

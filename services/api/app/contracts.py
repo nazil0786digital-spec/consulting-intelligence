@@ -67,3 +67,17 @@ class InvestigationPreviewResult(BaseModel):
     jira_draft: str
     client_response_draft: str
     safety_notice: str = "Drafts require human review. This service does not perform external actions."
+
+
+class EvaluationCaseResult(BaseModel):
+    scenario_id: str
+    passed: bool
+    checks: dict[str, bool]
+    detail: str
+
+
+class EvaluationReport(BaseModel):
+    suite: str
+    total_cases: int
+    passed_cases: int
+    results: list[EvaluationCaseResult]
