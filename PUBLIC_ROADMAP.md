@@ -39,6 +39,8 @@ Connect validated workflows to consultant tools such as Jira, email, collaborati
 
 **Public outcome:** approved work can move cleanly between the investigation workspace and existing team tools.
 
+**Released:** [v0.4.0](docs/releases/v0.4.0.md) provides an approval-driven integration foundation with Jira and n8n payload previews; no external delivery is enabled.
+
 ### Phase 5 — Advanced consulting assistance
 
 Add advanced investigation flows such as release-impact analysis, root-cause assistance, requirements support, and controlled specialist workflows.

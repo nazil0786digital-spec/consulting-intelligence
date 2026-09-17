@@ -4,6 +4,8 @@ All notable public changes are recorded here. Releases follow the process in [do
 
 ## Unreleased
 
+## v0.4.0 — 2026-09-18
+
 ### Added
 
 - Read-only, tenant-scoped Jira handoff preview with explicit approval requirement.
