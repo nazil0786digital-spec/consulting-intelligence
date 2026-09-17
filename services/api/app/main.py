@@ -16,7 +16,7 @@ from app.repositories import feedback_counts_for_organization, investigations_fo
 # Import models before table setup so local development has the complete metadata.
 from app import models  # noqa: F401
 
-app = FastAPI(title="Consulting Intelligence API", version="0.2.0")
+app = FastAPI(title="Consulting Intelligence API", version="0.3.0")
 
 # Phase 1 runs the web UI and API on different local ports. CORS permits only the
 # local UI origin; production will replace this with configured trusted origins.

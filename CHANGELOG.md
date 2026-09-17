@@ -4,6 +4,8 @@ All notable public changes are recorded here. Releases follow the process in [do
 
 ## Unreleased
 
+## v0.3.0 — 2026-09-18
+
 ### Added
 
 - Phase 3 sanitized baseline evaluation suite and API report for expected evidence retrieval.

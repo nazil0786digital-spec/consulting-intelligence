@@ -31,6 +31,8 @@ Add evaluation scenarios, quality monitoring, error handling, audit visibility, 
 
 **Public outcome:** a reliable pilot-ready product with measurable answer quality.
 
+**Released:** [v0.3.0](docs/releases/v0.3.0.md) provides baseline evaluation, evidence-quality checks, audit visibility, and pilot feedback monitoring.
+
 ### Phase 4 — Integrations and workflow automation
 
 Connect validated workflows to consultant tools such as Jira, email, collaboration, and knowledge systems. Integrations will remain approval-driven.
