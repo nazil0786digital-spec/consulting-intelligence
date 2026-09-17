@@ -1,11 +1,13 @@
 from sqlalchemy.orm import Session
 
 from app.contracts import Citation, EvidenceItem, InvestigationPreviewResult
+from app.issue_analysis import analyze_issue
 from app.models import Investigation
 from app.retrieval import search_knowledge
 
 
 def create_evidence_pack(session: Session, *, organization_id: str, issue_text: str) -> InvestigationPreviewResult:
+    context, missing = analyze_issue(issue_text)
     matches = search_knowledge(session, organization_id=organization_id, query=issue_text, limit=5)
     citations = [
         Citation(source_id=document.id, title=document.title, section=chunk.source_locator, excerpt=chunk.content[:600])
@@ -28,7 +30,7 @@ def create_evidence_pack(session: Session, *, organization_id: str, issue_text: 
         ),
         EvidenceItem(
             category="missing_information",
-            statement="Confirm the affected client, product version, module, expected result, actual result, and relevant logs before concluding root cause.",
+            statement=("Confirm " + ", ".join(missing) + " before concluding root cause.") if missing else "The issue includes the core context needed for evidence review; validate it against the cited sources before concluding root cause.",
         ),
         EvidenceItem(
             category="recommendation",
@@ -40,14 +42,14 @@ def create_evidence_pack(session: Session, *, organization_id: str, issue_text: 
             organization_id=organization_id,
             issue_text=issue_text,
             status="ready",
-            context_json={"evidence_source_ids": [citation.source_id for citation in citations], "retrieval_count": len(citations)},
+            context_json={**context, "missing_information": missing, "evidence_source_ids": [citation.source_id for citation in citations], "retrieval_count": len(citations)},
         )
     )
     session.commit()
     return InvestigationPreviewResult(
         organization_id=organization_id,
         issue_summary=issue_text,
-        extracted_context={"client": None, "product": None, "module": None, "version": None, "issue_type": "requires evidence review"},
+        extracted_context=context,
         evidence=evidence,
         jira_draft="Investigation initiated. The evidence pack identifies approved knowledge sources and the information needed before a conclusion is reached.",
         client_response_draft="Thank you for reporting this issue. We are reviewing the available information and will request any missing details needed to complete the investigation.",

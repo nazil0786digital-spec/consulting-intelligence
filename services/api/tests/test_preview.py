@@ -57,7 +57,7 @@ class InvestigationPreviewTests(unittest.TestCase):
         upload = self.client.post(
             f"/v1/organizations/{organization_id}/documents",
             data={"source_type": "release_note"},
-            files={"file": ("release-notes.txt", b"Release note content " * 200, "text/plain")},
+            files={"file": ("release-notes.txt", b"Release note content for PADER report count validation after version 26.2 upgrade. " * 200, "text/plain")},
         )
         self.assertEqual(upload.status_code, 201, upload.text)
         result = upload.json()
@@ -78,9 +78,10 @@ class InvestigationPreviewTests(unittest.TestCase):
 
         investigation = self.client.post(
             f"/v1/organizations/{organization_id}/investigations/preview",
-            json={"issue_text": "Does the release note explain the reported content issue?"},
+            json={"issue_text": "Client ABC Pharma reports PADER report count mismatch after upgrade to version 26.2. Expected 42, actual 37."},
         )
         self.assertEqual(investigation.status_code, 200, investigation.text)
         evidence = investigation.json()["evidence"]
         self.assertTrue(evidence[0]["citations"])
         self.assertEqual(evidence[0]["citations"][0]["source_id"], result["id"])
+        self.assertEqual(investigation.json()["extracted_context"]["module"], "Aggregate Reporting")
