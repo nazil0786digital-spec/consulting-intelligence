@@ -35,6 +35,14 @@ When explaining a solution to an interviewer, client, or teammate, use this sequ
 
 **Trade-off:** this is a small regression baseline, not a substitute for pilot-user feedback or a broader labeled evaluation set.
 
+## Phase 3 investigation audit history
+
+**Plain English:** a reviewer can see what investigations were created in their workspace, when they ran, and how many evidence sources each used.
+
+**Technical:** the read-only history endpoint filters records by organization before returning minimal audit metadata. The interface loads it only after an investigation is created.
+
+**Interview answer:** “We begin auditability with a tenant-scoped, read-only event view. It gives pilot reviewers traceability without granting the product permission to change tickets, documents, or client systems.”
+
 ## Working habit
 
 For each delivered feature, we will capture:

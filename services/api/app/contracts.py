@@ -81,3 +81,16 @@ class EvaluationReport(BaseModel):
     total_cases: int
     passed_cases: int
     results: list[EvaluationCaseResult]
+
+
+class InvestigationAuditRecord(BaseModel):
+    id: str
+    issue_summary: str
+    status: str
+    created_at: str
+    evidence_source_count: int
+
+
+class InvestigationAuditList(BaseModel):
+    organization_id: str
+    investigations: list[InvestigationAuditRecord]

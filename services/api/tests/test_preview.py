@@ -85,3 +85,14 @@ class InvestigationPreviewTests(unittest.TestCase):
         self.assertTrue(evidence[0]["citations"])
         self.assertEqual(evidence[0]["citations"][0]["source_id"], result["id"])
         self.assertEqual(investigation.json()["extracted_context"]["module"], "Aggregate Reporting")
+
+        history = self.client.get(f"/v1/organizations/{organization_id}/investigations")
+        self.assertEqual(history.status_code, 200, history.text)
+        record = history.json()["investigations"][0]
+        self.assertEqual(record["issue_summary"], investigation.json()["issue_summary"])
+        self.assertEqual(record["evidence_source_count"], len(evidence[0]["citations"]))
+
+        other_organization = self.client.post("/v1/organizations", json={"name": f"Other audit team {uuid4()}"})
+        other_history = self.client.get(f"/v1/organizations/{other_organization.json()['id']}/investigations")
+        self.assertEqual(other_history.status_code, 200)
+        self.assertEqual(other_history.json()["investigations"], [])

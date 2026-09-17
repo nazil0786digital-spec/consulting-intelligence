@@ -12,6 +12,7 @@ type Result = {
   client_response_draft: string;
   safety_notice: string;
 };
+type AuditRecord = { id: string; issue_summary: string; status: string; created_at: string; evidence_source_count: number };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 const initialIssue = "PADER report counts differ after an upgrade to version 26.2.";
@@ -36,6 +37,12 @@ export default function Home() {
   const [ingestionError, setIngestionError] = useState<string | null>(null);
   const [creatingWorkspace, setCreatingWorkspace] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [auditHistory, setAuditHistory] = useState<AuditRecord[]>([]);
+
+  async function refreshAuditHistory(workspaceId: string) {
+    const response = await fetch(`${API_URL}/v1/organizations/${workspaceId}/investigations`);
+    if (response.ok) setAuditHistory((await response.json()).investigations);
+  }
 
   async function createWorkspace(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -105,6 +112,7 @@ export default function Home() {
       });
       if (!response.ok) throw new Error("The investigation could not be created. Check that the API is running.");
       setResult(await response.json());
+      if (organizationId) await refreshAuditHistory(organizationId);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Unexpected error");
     } finally {
@@ -158,6 +166,18 @@ export default function Home() {
         </form>
         {error && <p className="error">{error}</p>}
       </section>
+
+      {organizationId && auditHistory.length > 0 && <section className="card">
+        <p className="eyebrow">Phase 3 audit visibility</p>
+        <h2>Recent investigations</h2>
+        <p className="hint">Read-only workspace history. External actions are not available.</p>
+        <ul className="audit-list">
+          {auditHistory.map((record) => <li key={record.id}>
+            <strong>{record.issue_summary}</strong><br />
+            {record.status} · {record.evidence_source_count} cited source{record.evidence_source_count === 1 ? "" : "s"} · {new Date(record.created_at).toLocaleString()}
+          </li>)}
+        </ul>
+      </section>}
 
       {result && <section className="results" aria-live="polite">
         <div className="card">
