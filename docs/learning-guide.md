@@ -67,6 +67,16 @@ When explaining a solution to an interviewer, client, or teammate, use this sequ
 
 **Interview answer:** “We turn quality expectations into visible, testable checks. The UI does not hide uncertainty; it tells the consultant exactly what still needs review.”
 
+## Phase 4 Jira handoff preview
+
+**Plain English:** the product prepares a proposed Jira ticket, but a consultant must review it before anything can be created externally.
+
+**Technical:** the handoff endpoint is read-only. It builds a tenant-scoped preview from the saved investigation and marks the payload `preview_only` with `approval_required: true`.
+
+**Interview answer:** “We begin integrations with a dry-run payload. That lets us validate field mapping and human approval before storing credentials or permitting an external write.”
+
+**Trade-off:** this preview does not create a Jira issue. A future approved integration will need authentication, explicit approval state, and an audit event for the external action.
+
 ## Working habit
 
 For each delivered feature, we will capture:

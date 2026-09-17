@@ -122,3 +122,11 @@ class FeedbackSummary(BaseModel):
     helpful_count: int
     needs_review_count: int
     total_count: int
+
+
+class IntegrationHandoffPreview(BaseModel):
+    integration: Literal["jira"]
+    mode: Literal["preview_only"]
+    approval_required: bool
+    investigation_id: str
+    payload: dict[str, str | list[str]]

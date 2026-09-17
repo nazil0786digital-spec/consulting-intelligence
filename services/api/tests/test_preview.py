@@ -120,3 +120,14 @@ class InvestigationPreviewTests(unittest.TestCase):
             json={"rating": "needs_review"},
         )
         self.assertEqual(cross_tenant_feedback.status_code, 404)
+
+        handoff = self.client.get(f"/v1/organizations/{organization_id}/investigations/{investigation_id}/handoffs/jira")
+        self.assertEqual(handoff.status_code, 200, handoff.text)
+        self.assertEqual(handoff.json()["mode"], "preview_only")
+        self.assertTrue(handoff.json()["approval_required"])
+        self.assertIn("review-required", handoff.json()["payload"]["labels"])
+
+        cross_tenant_handoff = self.client.get(
+            f"/v1/organizations/{other_organization.json()['id']}/investigations/{investigation_id}/handoffs/jira"
+        )
+        self.assertEqual(cross_tenant_handoff.status_code, 404)

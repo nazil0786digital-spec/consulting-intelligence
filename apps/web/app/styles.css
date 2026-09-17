@@ -31,4 +31,5 @@ blockquote { background: #f4f7fc; border-left: 3px solid #5f8fe8; border-radius:
 .quality-list li { border-left: 3px solid #ab1835; line-height: 1.55; padding-left: 12px; }
 .quality-list .pass { border-color: #187244; }
 .quality-list .review { border-color: #b36a00; }
+.handoff-preview { background: #f4f7fc; border-radius: 8px; font-size: .85rem; overflow-x: auto; padding: 14px; white-space: pre-wrap; }
 @media (max-width: 640px) { main { padding-top: 32px; } dl, .two-column { grid-template-columns: 1fr; } }
