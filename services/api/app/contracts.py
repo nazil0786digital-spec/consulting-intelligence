@@ -36,6 +36,10 @@ class KnowledgeSearchResult(BaseModel):
     relevance_score: float
 
 
+class OrganizationInvestigationRequest(BaseModel):
+    issue_text: str = Field(min_length=10, max_length=10_000)
+
+
 class InvestigationPreviewRequest(BaseModel):
     organization_id: str = Field(min_length=1, examples=["demo-consulting"])
     issue_text: str = Field(min_length=10, examples=["PADER report results differ after 26.2 upgrade."])

@@ -3,12 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.contracts import DocumentResponse, EvidenceItem, InvestigationPreviewRequest, InvestigationPreviewResult, KnowledgeSearchRequest, KnowledgeSearchResult, OrganizationCreateRequest, OrganizationResponse
+from app.contracts import DocumentResponse, EvidenceItem, InvestigationPreviewRequest, InvestigationPreviewResult, KnowledgeSearchRequest, KnowledgeSearchResult, OrganizationCreateRequest, OrganizationInvestigationRequest, OrganizationResponse
 from app.db import get_session, prepare_database
 from app.fixtures import DEMO_ORGANIZATION, citations_for
 from app.ingestion import ingest_text_document
 from app.models import Document, Organization
 from app.retrieval import search_knowledge
+from app.evidence import create_evidence_pack
 
 # Import models before table setup so local development has the complete metadata.
 from app import models  # noqa: F401
@@ -125,6 +126,17 @@ def search_organization_knowledge(
             limit=request.limit,
         )
     ]
+
+
+@app.post("/v1/organizations/{organization_id}/investigations/preview", response_model=InvestigationPreviewResult)
+def preview_organization_investigation(
+    organization_id: str,
+    request: OrganizationInvestigationRequest,
+    session: Session = Depends(get_session),
+) -> InvestigationPreviewResult:
+    if not session.get(Organization, organization_id):
+        raise HTTPException(status_code=404, detail="Organization not found.")
+    return create_evidence_pack(session, organization_id=organization_id, issue_text=request.issue_text)
 
 
 @app.post("/v1/investigations/preview", response_model=InvestigationPreviewResult)

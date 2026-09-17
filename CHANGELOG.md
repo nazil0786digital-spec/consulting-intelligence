@@ -13,6 +13,7 @@ All notable public changes are recorded here. Releases follow the process in [do
 - Tenant-scoped knowledge-search endpoint with source excerpts, relevance scores, and isolation tests.
 - Hybrid retrieval adapter with offline deterministic vectors and optional OpenAI embeddings via environment-based configuration.
 - Vector persistence contract: `vector(1536)` on PostgreSQL and JSON vectors for offline SQLite development.
+- Organization investigation endpoint that turns retrieved uploaded knowledge into a citation-first evidence pack.
 
 ## v0.1.0 — 2026-09-17
 

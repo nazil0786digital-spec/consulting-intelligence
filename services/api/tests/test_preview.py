@@ -75,3 +75,12 @@ class InvestigationPreviewTests(unittest.TestCase):
         )
         self.assertEqual(search.status_code, 200, search.text)
         self.assertGreater(search.json()[0]["relevance_score"], 0)
+
+        investigation = self.client.post(
+            f"/v1/organizations/{organization_id}/investigations/preview",
+            json={"issue_text": "Does the release note explain the reported content issue?"},
+        )
+        self.assertEqual(investigation.status_code, 200, investigation.text)
+        evidence = investigation.json()["evidence"]
+        self.assertTrue(evidence[0]["citations"])
+        self.assertEqual(evidence[0]["citations"][0]["source_id"], result["id"])

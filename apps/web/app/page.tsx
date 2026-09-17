@@ -91,10 +91,16 @@ export default function Home() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_URL}/v1/investigations/preview`, {
+      const endpoint = organizationId
+        ? `${API_URL}/v1/organizations/${organizationId}/investigations/preview`
+        : `${API_URL}/v1/investigations/preview`;
+      const payload = organizationId
+        ? { issue_text: issue }
+        : { organization_id: "demo-consulting", issue_text: issue };
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ organization_id: "demo-consulting", issue_text: issue })
+        body: JSON.stringify(payload)
       });
       if (!response.ok) throw new Error("The investigation could not be created. Check that the API is running.");
       setResult(await response.json());
@@ -131,6 +137,7 @@ export default function Home() {
 
       <section className="card">
         <h2>New investigation</h2>
+        <p className="hint">{organizationId ? "This investigation searches the knowledge indexed in your workspace." : "Create a workspace and index a document above to investigate your own knowledge; otherwise this uses the sample corpus."}</p>
         <form onSubmit={investigate}>
           <label htmlFor="issue">Client issue, email, or ticket</label>
           <textarea id="issue" value={issue} onChange={(event) => setIssue(event.target.value)} minLength={10} required />

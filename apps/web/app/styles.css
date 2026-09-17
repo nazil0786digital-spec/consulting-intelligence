@@ -19,6 +19,7 @@ dd { font-weight: 650; margin: 4px 0 0; }
 blockquote { background: #f4f7fc; border-left: 3px solid #5f8fe8; border-radius: 0 8px 8px 0; line-height: 1.5; margin: 16px 0 0; padding: 12px; }
 .two-column { display: grid; gap: 16px; grid-template-columns: repeat(2, 1fr); }
 .notice { color: #53627d; font-size: .9rem; margin: 22px 4px; }
+.hint { color: #53627d; font-size: .9rem; margin-top: -8px; }
 .success { color: #187244; }
 .error { color: #ab1835; }
 @media (max-width: 640px) { main { padding-top: 32px; } dl, .two-column { grid-template-columns: 1fr; } }
