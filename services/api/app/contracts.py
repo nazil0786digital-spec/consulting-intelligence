@@ -115,3 +115,10 @@ class InvestigationFeedbackResponse(BaseModel):
     rating: str
     comment: str | None
     created_at: str
+
+
+class FeedbackSummary(BaseModel):
+    organization_id: str
+    helpful_count: int
+    needs_review_count: int
+    total_count: int

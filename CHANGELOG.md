@@ -10,6 +10,7 @@ All notable public changes are recorded here. Releases follow the process in [do
 - Tenant-scoped, read-only investigation audit history in the API and workspace interface.
 - Pilot feedback capture for evidence packs, with tenant-scoped investigation validation.
 - Visible evidence-pack quality checklist for citations, context completeness, and mandatory human review.
+- Privacy-conscious workspace feedback summary for pilot quality monitoring.
 
 ## v0.2.0 — 2026-09-18
 

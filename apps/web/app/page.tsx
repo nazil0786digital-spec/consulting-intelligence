@@ -16,6 +16,7 @@ type Result = {
   safety_notice: string;
 };
 type AuditRecord = { id: string; issue_summary: string; status: string; created_at: string; evidence_source_count: number };
+type FeedbackSummary = { helpful_count: number; needs_review_count: number; total_count: number };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
 const initialIssue = "PADER report counts differ after an upgrade to version 26.2.";
@@ -43,10 +44,16 @@ export default function Home() {
   const [auditHistory, setAuditHistory] = useState<AuditRecord[]>([]);
   const [feedbackComment, setFeedbackComment] = useState("");
   const [feedbackStatus, setFeedbackStatus] = useState<string | null>(null);
+  const [feedbackSummary, setFeedbackSummary] = useState<FeedbackSummary | null>(null);
 
   async function refreshAuditHistory(workspaceId: string) {
     const response = await fetch(`${API_URL}/v1/organizations/${workspaceId}/investigations`);
     if (response.ok) setAuditHistory((await response.json()).investigations);
+  }
+
+  async function refreshFeedbackSummary(workspaceId: string) {
+    const response = await fetch(`${API_URL}/v1/organizations/${workspaceId}/feedback/summary`);
+    if (response.ok) setFeedbackSummary(await response.json());
   }
 
   async function createWorkspace(event: FormEvent<HTMLFormElement>) {
@@ -135,7 +142,10 @@ export default function Home() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ rating, comment: feedbackComment || null })
     });
-    setFeedbackStatus(response.ok ? "Feedback saved for pilot review." : "Feedback could not be saved.");
+    if (response.ok) {
+      setFeedbackStatus("Feedback saved for pilot review.");
+      await refreshFeedbackSummary(organizationId);
+    } else setFeedbackStatus("Feedback could not be saved.");
   }
 
   return (
@@ -238,6 +248,12 @@ export default function Home() {
             <button type="button" className="secondary" onClick={() => submitFeedback("needs_review")}>Needs review</button>
           </div>
           {feedbackStatus && <p className="notice">{feedbackStatus}</p>}
+        </section>}
+        {organizationId && feedbackSummary && <section className="card feedback-summary">
+          <p className="eyebrow">Pilot quality signal</p>
+          <h2>Reviewer feedback</h2>
+          <p>{feedbackSummary.helpful_count} helpful · {feedbackSummary.needs_review_count} needs review · {feedbackSummary.total_count} total</p>
+          <p className="hint">Counts are workspace-scoped. Individual feedback notes are not shown here.</p>
         </section>}
         <p className="notice">{result.safety_notice}</p>
       </section>}

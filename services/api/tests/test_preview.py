@@ -110,6 +110,11 @@ class InvestigationPreviewTests(unittest.TestCase):
         self.assertEqual(feedback.json()["rating"], "helpful")
         self.assertEqual(feedback.json()["investigation_id"], investigation_id)
 
+        feedback_summary = self.client.get(f"/v1/organizations/{organization_id}/feedback/summary")
+        self.assertEqual(feedback_summary.status_code, 200)
+        self.assertEqual(feedback_summary.json()["helpful_count"], 1)
+        self.assertEqual(feedback_summary.json()["needs_review_count"], 0)
+
         cross_tenant_feedback = self.client.post(
             f"/v1/organizations/{other_organization.json()['id']}/investigations/{investigation_id}/feedback",
             json={"rating": "needs_review"},

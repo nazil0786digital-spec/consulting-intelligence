@@ -51,6 +51,14 @@ When explaining a solution to an interviewer, client, or teammate, use this sequ
 
 **Trade-off:** feedback is a quality signal, not an approval. Authentication and reviewer identity are planned before broader deployment.
 
+## Phase 3 feedback monitoring
+
+**Plain English:** the workspace turns pilot feedback into simple aggregate counts so the team can see whether evidence packs are generally useful or often need review.
+
+**Technical:** the summary endpoint aggregates only rating categories inside the workspace. It intentionally does not return free-text feedback comments to the dashboard.
+
+**Interview answer:** “We measure pilot quality using workspace-scoped aggregates. We separate operational metrics from free-text feedback to reduce unnecessary data exposure.”
+
 ## Phase 3 quality checklist
 
 **Plain English:** every evidence pack tells the reviewer if it found approved sources, whether key context is still missing, and that a human review is mandatory.
